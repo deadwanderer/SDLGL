@@ -11,16 +11,16 @@ enum HexDirection {
     HexDirection_SW,
     HexDirection_W,
     HexDirection_NW
-}
+};
 
 HexDirection GetHexDirOpposite(HexDirection direction) {
     HexDirection Result;
     
-    if ((uint32_t)direction < 3) {
-        Result = direction + 3;
+    if ((int)direction < 3) {
+        Result = (HexDirection)(direction + 3);
     }
     else {
-        Result = direction - 3;
+        Result = (HexDirection)(direction - 3);
     }
     
     return(Result);
@@ -32,7 +32,7 @@ HexDirection GetHexDirPrevious(HexDirection direction) {
         Result = HexDirection_NW;
     }
     else {
-        Result = direction - 1;
+        Result = (HexDirection)(direction - 1);
     }
     
     return(Result);
@@ -45,7 +45,7 @@ HexDirection GetHexDirNext(HexDirection direction) {
         Result = HexDirection_NE;
     }
     else {
-        Result = direction + 1;
+        Result = (HexDirection)(direction + 1);
     }
     
     return(Result);
@@ -55,9 +55,10 @@ enum HexEdgeType {
     HexEdge_Flat,
     HexEdge_Slope,
     HexEdge_Cliff
-}
+};
 
-static struct HexMetrics {
+static class Hex_Metrics {
+    public:
     // Hex chunk information
     uint32_t chunkSizeX = 5;
     uint32_t chunkSizeZ = 5;
@@ -71,7 +72,7 @@ static struct HexMetrics {
     float blendFactor = 1.0f - solidFactor;
     
     // elevation
-    float elevationStep = 5f;
+    float elevationStep = 5.0f;
     
     // Connection terraces
     uint32_t terracesPerSlope = 2;
@@ -89,7 +90,7 @@ static struct HexMetrics {
     float noiseScale = 0.3f;
     float elevationPerturbStrength = 1.5f;
     
-    glm::vec3 corners[] = {
+    glm::vec3 corners[7] = {
         glm::vec3(0.0f, 0.0f, outerRadius),
         glm::vec3(innerRadius, 0.0f, 0.5f * outerRadius),
         glm::vec3(innerRadius, 0.0f, -0.5f * outerRadius),
@@ -151,28 +152,29 @@ static struct HexMetrics {
 } HexMetrics;
 
 int Round(float num) {
-    return (num - floor(num) > 0.5f) ? ceil(num) : floor(num);
+    return (num - floor(num) > 0.5f) ? (int)ceil(num) : (int)floor(num);
 }
 
-struct HexCoordinates {
-    int x, y, z;
+class HexCoordinates {
+    public:
+    int _x, _y, _z;
     
     HexCoordinates(int x, int z) {
-        this.x = x;
-        this.z = z;
-        this.y = -x - z;
+        _x = x;
+        _z = z;
+        _y = -x - z;
     }
     
-    void FromOffsetCoordinates(HexCoordinates *hc, int x, int z) {
-        hc->x = (x - z / 2);
-        hc->z = z;
-        hc->y = -hc->x - hc->z;
+    void FromOffsetCoordinates(int x, int z) {
+        _x = (x - z / 2);
+        _z = z;
+        _y = -x - z;
     }
     
-    void FromPosition(HexCoordinates *hc, glm::vec3 position) {
-        float x =  position.x / (HexMetrics.innerRadius * 2);
+    void FromPosition(glm::vec3 position) {
+        float x =  position.x / (HexMetrics.innerRadius * 2.0f);
         float y = -x;
-        float offset = position.z / (HexMetrics.outerRadius * 3f);
+        float offset = position.z / (HexMetrics.outerRadius * 3.0f);
         x -= offset;
         y -= offset;
         int iX = Round(x);
@@ -192,12 +194,12 @@ struct HexCoordinates {
             }
         }
         
-        hc->x = iX;
-        hc->z = iZ;
-        hc->y = -hc->x - hc->z;
+        _x = iX;
+        _z = iZ;
+        _y = -_x - _z;
     }
     
     
-} HexCoordinates;
+};
 
 #endif

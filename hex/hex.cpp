@@ -20,6 +20,8 @@
 #include "../include/glad.h"
 #include "../include/SDL.h"
 
+#include "hex_metrics.h"
+
 #undef main
 
 const int SCREEN_WIDTH = 1600;
@@ -258,9 +260,6 @@ extern "C" int main(int argc, char** argv) {
         ImGui::StyleColorsDark();
         
         glEnable(GL_DEPTH_TEST);
-        
-        Shader lightingShader("colors.vs", "colors.fs");
-        Shader lampShader("lamp.vs", "lamp.fs");
         
         while(!quit) {
             if (captureMouse) {
