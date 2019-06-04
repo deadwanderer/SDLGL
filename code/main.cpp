@@ -309,6 +309,7 @@ extern "C" int main(int argc, char** argv) {
         Shader modelShader("model.vs", "model.fs");
         
         Model suit("../res/nanosuit/nanosuit.obj");
+        Model cyborg("../res/cyborg/cyborg.obj");
         
         unsigned int diffuseMap = loadTexture("../res/container2.png");
         unsigned int specularMap = loadTexture("../res/container2_specular.png");
@@ -512,6 +513,9 @@ extern "C" int main(int argc, char** argv) {
         //lightingShader.setInt("material.emission", 2);
         lightingShader.setFloat("material.shininess", 64.0f);
         
+        modelShader.use();
+        modelShader.setFloat("shininess", 64.0f);
+        
         while(!quit) {
             if (captureMouse) {
                 SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -529,7 +533,7 @@ extern "C" int main(int argc, char** argv) {
             
             glClearColor(clearColors[currEnv].x, clearColors[currEnv].y, clearColors[currEnv].z, clearColors[currEnv].w);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            
+            /*
             lightingShader.use();
             float lightX = 2.0f * sin(timeValue);
             float lightY = -0.3f;
@@ -629,11 +633,66 @@ extern "C" int main(int argc, char** argv) {
             modelShader.use();
             modelShader.setMat4("projection", projection);
             modelShader.setMat4("view", view);
+            
+            modelShader.setVec3("dirLight.ambient", dirLightAmbients[currEnv]);
+            modelShader.setVec3("dirLight.diffuse", dirLightDiffuses[currEnv]);
+            modelShader.setVec3("dirLight.specular", dirLightSpeculars[currEnv]);
+            
+            modelShader.setVec3("pointLights[0].position", pointLightPositions[0]);
+            modelShader.setVec3("pointLights[0].ambient", pointLightColors[point + 0] * 0.1f);
+            modelShader.setVec3("pointLights[0].diffuse", pointLightColors[point + 0]);
+            modelShader.setVec3("pointLights[0].specular", pointLightColors[point + 0]);
+            modelShader.setFloat("pointLights[0].constant", pointLightConstant);
+            modelShader.setFloat("pointLights[0].linear", pointLightLinears[point + 0]);
+            modelShader.setFloat("pointLights[0].quadratic", pointLightQuadratics[point + 0]);
+            
+            modelShader.setVec3("pointLights[1].position", pointLightPositions[1]);
+            modelShader.setVec3("pointLights[1].ambient", pointLightColors[point + 1] * 0.1f);
+            modelShader.setVec3("pointLights[1].diffuse", pointLightColors[point + 1]);
+            modelShader.setVec3("pointLights[1].specular", pointLightColors[point + 1]);
+            modelShader.setFloat("pointLights[1].constant", pointLightConstant);
+            modelShader.setFloat("pointLights[1].linear", pointLightLinears[point + 1]);
+            modelShader.setFloat("pointLights[1].quadratic", pointLightQuadratics[point + 1]);
+            
+            modelShader.setVec3("pointLights[2].position", pointLightPositions[2]);
+            modelShader.setVec3("pointLights[2].ambient", pointLightColors[point + 2] * 0.1f);
+            modelShader.setVec3("pointLights[2].diffuse", pointLightColors[point + 2]);
+            modelShader.setVec3("pointLights[2].specular", pointLightColors[point + 2]);
+            modelShader.setFloat("pointLights[2].constant", pointLightConstant);
+            modelShader.setFloat("pointLights[2].linear", pointLightLinears[point + 2]);
+            modelShader.setFloat("pointLights[2].quadratic", pointLightQuadratics[point + 2]);
+            
+            modelShader.setVec3("pointLights[3].position", pointLightPositions[3]);
+            modelShader.setVec3("pointLights[3].ambient", pointLightColors[point + 3] * 0.1f);
+            modelShader.setVec3("pointLights[3].diffuse", pointLightColors[point + 3]);
+            modelShader.setVec3("pointLights[3].specular", pointLightColors[point + 3]);
+            modelShader.setFloat("pointLights[3].constant", pointLightConstant);
+            modelShader.setFloat("pointLights[3].linear", pointLightLinears[point + 3]);
+            modelShader.setFloat("pointLights[3].quadratic", pointLightQuadratics[point + 3]);
+            
+            modelShader.setVec3("spotLight.position", camera.Position);
+            modelShader.setVec3("spotLight.direction", camera.Front);
+            modelShader.setVec3("spotLight.ambient", spotLightAmbients[currEnv]);
+            modelShader.setVec3("spotLight.diffuse", spotLightDiffuses[currEnv]);
+            modelShader.setVec3("spotLight.specular", spotLightSpeculars[currEnv]);
+            modelShader.setFloat("spotLight.constant", spotLightConstant);
+            modelShader.setFloat("spotLight.linear", spotLightLinears[currEnv]);
+            modelShader.setFloat("spotLight.quadratic", spotLightQuadratics[currEnv]);
+            modelShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(spotLightCutOffs[currEnv])));
+            modelShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(spotLightOuterCutOffs[currEnv])));
+            
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(10.0f, -5.0f, -10.0f));
+            model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
             modelShader.setMat4("model", model);
             suit.Draw(modelShader);
             
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(-10.0f, -5.0f, 10.0f));
+            model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+            modelShader.setMat4("model", model);
+            cyborg.Draw(modelShader);
+            */
             //drawImgui();
             SDL_GL_SwapWindow(window);
         }

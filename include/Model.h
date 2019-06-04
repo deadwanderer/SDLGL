@@ -64,6 +64,7 @@ class Model {
         // retrieve the directory path of the filepath
         directory = path.substr(0, path.find_last_of('/'));
         
+        cout << "Loading model: " << path << endl;
         // process ASSIMP's root node recursively
         processNode(scene->mRootNode, scene);
     }
@@ -86,6 +87,7 @@ class Model {
     }
     
     Mesh processMesh(aiMesh *mesh, const aiScene *scene) {
+        cout << "Loading mesh." << endl;
         // data to fill
         vector<Vertex> vertices;
         vector<unsigned int> indices;
@@ -171,6 +173,7 @@ class Model {
             // 4. Height maps
             vector<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
             textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+            cout << "Number of textures: " << textures.size() << endl;
         }
         // return a mesh object created from the extracted mesh data
         return Mesh(vertices, indices, textures);
@@ -202,6 +205,7 @@ class Model {
                 textures_loaded.push_back(texture);
             }
         }
+        cout << "Loaded " << mat->GetTextureCount(type) << " texture(s) of type " << typeName << endl;
         return textures;
     }
 };
