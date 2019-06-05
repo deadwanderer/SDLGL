@@ -88,7 +88,12 @@ extern "C" {
     GLAPI int gladLoadGLLoader(GLADloadproc);
     
 #include <stddef.h>
+
+#ifdef _WIN32
 #include "KHR\khrplatform.h"
+#else
+#include "KHR/khrplatform.h"
+#endif
 #ifndef GLEXT_64_TYPES_DEFINED
     /* This code block is duplicated in glxext.h, so must be protected */
 #define GLEXT_64_TYPES_DEFINED
