@@ -1,6 +1,6 @@
 @echo off
 
-set CommonCompilerFlags=-MTd -nologo -Gm- -GR- -EHa- -EHsc- -Od -Oi -WX -W4 -wd4201 -wd4100 -wd4189 -wd4996
+set CommonCompilerFlags= /std:c++17 -MTd -nologo -Gm- -GR- -EHa- -EHsc- -Od -Oi -WX -W4 -wd4201 -wd4100 -wd4189 -wd4996
 set CommonLinkerFlags= -incremental:no -opt:ref user32.lib opengl32.lib gdi32.lib winmm.lib ..\lib\SDL2.lib ..\lib\SDL2main.lib ..\lib\assimp.lib
 
 IF NOT EXIST ..\build mkdir ..\build
