@@ -57,7 +57,7 @@ enum HexEdgeType {
     HexEdge_Cliff
 };
 
-static class Hex_Metrics {
+static class HexMetrics {
     public:
     // Hex chunk information
     uint32_t chunkSizeX = 5;
