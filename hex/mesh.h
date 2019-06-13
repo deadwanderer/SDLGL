@@ -51,6 +51,7 @@ class Mesh {
     
     GLuint width, length;
     
+    Shader meshShader;
     GLuint meshVAO, meshVBO, meshEBO;
     GLuint vertexCount, indexCount, normalCount, colorCount;
     GLuint maxVertexBufferSize, maxIndexBufferSize;

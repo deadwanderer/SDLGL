@@ -1,13 +1,13 @@
 #include "mesh.h"
 
-Mesh::Mesh() {
+Mesh::Mesh() : meshShader("../res/shaders/meshShader.vs", "../res/shaders/meshShader.fs") {
     width = length = 5;
     
     vertexCount = indexCount = normalCount = colorCount = 0;
     dirty = true;
 }
 
-Mesh::Mesh(GLuint cellsWide, GLuint cellsLong) {
+Mesh::Mesh(GLuint cellsWide, GLuint cellsLong) : meshShader("../res/shaders/meshShader.vs", "../res/shaders/meshShader.fs") {
     width = cellsWide;
     length = cellsLong;
     
@@ -46,10 +46,10 @@ void Mesh::Initialize() {
     
     glBindVertexArray(meshVAO);
     glBindBuffer(GL_ARRAY_BUFFER, meshVBO);
-    glBufferData(GL_ARRAY_BUFFER, maxVertexBufferSize, 0, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, maxVertexBufferSize * sizeof(GLfloat), 0, GL_DYNAMIC_DRAW);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxIndexBufferSize, 0, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxIndexBufferSize * sizeof(GLuint), 0, GL_DYNAMIC_DRAW);
     
     // TODO(anthony): Complete mesh initialization
     
