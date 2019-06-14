@@ -21,6 +21,7 @@
 #include "../include/SDL.h"
 
 #include "hex_metrics.h"
+#include "Game.h"
 
 #undef main
 
@@ -29,28 +30,13 @@ const int SCREEN_HEIGHT = 900;
 
 bool init();
 void close();
-void processInput();
 void printSDL_GL_Attributes();
-void drawImgui();
-unsigned int loadTexture(char const * path);
 
 SDL_Window* window = NULL;
 SDL_GLContext context;
+Game* game;
 
 bool quit = false;
-bool captureMouse = true;
-
-float lastPressed = 0.0f;
-float keyCooldown = 0.3f;
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-
-ImVec4 clear_color = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
-
-glm::mat4 projection = glm::mat4();
-glm::mat4 view = glm::mat4();
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 bool init() {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
@@ -135,92 +121,16 @@ bool init() {
     
     printSDL_GL_Attributes();
     
+    game = new Game();
+    game->Initialize();
+    
     return true;
 }
 
 void close() {
-    ImGui_ImplSdlGL3_Shutdown();
-    ImGui::DestroyContext();
-    
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
     SDL_Quit();
-}
-
-unsigned int loadTexture(char const * path) {
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    
-    int width, height, numComponents;
-    unsigned char *data = stbi_load(path, &width, &height, &numComponents, 0);
-    if (data) {
-        GLenum format = GL_RGB;
-        if (numComponents == 1)
-            format = GL_RED;
-        else if (numComponents == 3)
-            format = GL_RGB;
-        else if (numComponents == 4)
-            format = GL_RGBA;
-        
-        glBindTexture(GL_TEXTURE_2D, textureID);
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-    else {
-        std::cout << "Unable to load image: " << path << std::endl;
-    }
-    stbi_image_free(data);
-    
-    return textureID;
-}
-void processInput() {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        ImGui_ImplSdlGL3_ProcessEvent(&event);
-        if (event.type == SDL_QUIT || 
-            (event.type == SDL_KEYDOWN &&
-             event.key.keysym.sym == SDLK_ESCAPE)) {
-            quit = true;
-        }
-        if (event.type == SDL_MOUSEMOTION && captureMouse) {
-            camera.ProcessMouseMovement((float)event.motion.xrel, (float)-event.motion.yrel);
-        }
-        if (event.type == SDL_MOUSEWHEEL && captureMouse) {
-            //camera.ProcessMouseScroll((float)event.wheel.y);
-        }
-    }
-    
-    const Uint8* keystate = SDL_GetKeyboardState(NULL);
-    
-    lastPressed += deltaTime;
-    
-    if (keystate[SDL_SCANCODE_W]) {
-        camera.ProcessKeyboard(FORWARD, deltaTime);
-    }
-    if (keystate[SDL_SCANCODE_S]) {
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
-    }
-    if (keystate[SDL_SCANCODE_A]) {
-        camera.ProcessKeyboard(LEFT, deltaTime);
-    }
-    if (keystate[SDL_SCANCODE_D]) {
-        camera.ProcessKeyboard(RIGHT, deltaTime);
-    }
-    if (keystate[SDL_SCANCODE_Q] || keystate[SDL_SCANCODE_SPACE]) {
-        camera.ProcessKeyboard(UP, deltaTime);
-    }
-    if (keystate[SDL_SCANCODE_E] || keystate[SDL_SCANCODE_LSHIFT]) {
-        camera.ProcessKeyboard(DOWN, deltaTime);
-    }
-    if (keystate[SDL_SCANCODE_F] && lastPressed >= keyCooldown) {
-        captureMouse = !captureMouse;
-        lastPressed = 0.0f;
-    }
 }
 
 void printSDL_GL_Attributes() {
@@ -236,54 +146,15 @@ void printSDL_GL_Attributes() {
     printf("Max vertex attributes: %d\n", attribs);
 }
 
-void drawImgui() {
-    ImGui_ImplSdlGL3_NewFrame(window);
-    
-    ImGui::ColorEdit3("clear color", (float*)&clear_color);
-    
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    
-    glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
-    ImGui::Render();
-    ImGui_ImplSdlGL3_RenderDrawData(ImGui::GetDrawData());
-}
-
 extern "C" int main(int argc, char** argv) {
     if (!init()) {
         printf("No go!\n");
+        return -1;
     }
-    else {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        ImGui_ImplSdlGL3_Init(window);
-        ImGui::StyleColorsDark();
-        
-        glEnable(GL_DEPTH_TEST);
-        
-        while(!quit) {
-            if (captureMouse) {
-                SDL_SetRelativeMouseMode(SDL_TRUE);
-            }
-            else {
-                SDL_SetRelativeMouseMode(SDL_FALSE);
-            }
-            uint32_t ticks = SDL_GetTicks();
-            float timeValue = ticks / 1000.0f;
-            
-            deltaTime = timeValue - lastFrame;
-            lastFrame = timeValue;
-            
-            processInput();
-            
-            glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            
-            drawImgui();
-            SDL_GL_SwapWindow(window);
-        }
-        
-        close();
-    }
+    
+    game->Run();
+    
+    close();
+    
     return 0;
 }

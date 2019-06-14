@@ -8,10 +8,12 @@ class Game {
     ~Game();
     
     void Initialize();
+    void Run();
     void Update();
     void Render();
     
-    Camera Camera;
+    Camera* Camera;
+    InputManager* Input;
     
     private:
     
