@@ -1,2 +1,7 @@
 build/libassimp.so
 code/main
+*.obj
+*.exe
+build/.vs
+Breakout/*
+build/imgui.ini
