@@ -18,10 +18,10 @@ void Game::Initialize() {
     Input = new InputManager(this);
     Grid = new HexGrid(this);
     GameClock = new Clock(this);
-    
+
     GameClock->Initialize();
     Grid->Initialize();
-    
+
     running = true;
     shouldRender = false;
     std::cout << "Initialization complete." << std::endl;
@@ -41,22 +41,23 @@ void Game::Update() {
     GameClock->Update();
     elapsedRender += GameClock->GetDeltaTime();
     if (elapsedRender >= renderTime) {
+        //std::cout << "Elapsed time: " << elapsedRender << std::endl;
         shouldRender = true;
         elapsedRender -= renderTime;
     }
-    
+
     Input->Update(GameClock->GetDeltaTime(), &running);
-    
+
     if (Input->IsKeyDown(KeyEscape)) {
         running = false;
     }
     Grid->Update();
-    
+
     //std::cout << "Game update at " << GameClock->GetLastTick() << " ticks." << std::endl;
 }
 
 void Game::Render() {
     shouldRender = false;
     Grid->Render();
-    std::cout << "Game render." << std::endl;
+    //std::cout << "Game render." << std::endl;
 }

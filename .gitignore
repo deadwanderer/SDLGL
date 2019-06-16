@@ -5,3 +5,4 @@ code/main
 build/.vs
 Breakout/*
 build/imgui.ini
+hex/hex
