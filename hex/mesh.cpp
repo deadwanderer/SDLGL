@@ -16,9 +16,9 @@ Mesh::Mesh(GLuint cellsWide, GLuint cellsLong) : meshShader("../res/shaders/mesh
 }
 
 Mesh::~Mesh() {
-    glDeleteBuffers(1, meshEBO);
-    glDeleteBuffers(1, meshVBO);
-    glDeleteVertexArrays(1, meshVAO);
+    glDeleteBuffers(1, &meshEBO);
+    glDeleteBuffers(1, &meshVBO);
+    glDeleteVertexArrays(1, &meshVAO);
 }
 
 void Mesh::Triangulate() {
@@ -73,12 +73,12 @@ GLuint Mesh::CalculateVertexBufferMaxSize() {
     GLuint verticesPerCell = 18; // 3 vertices per tri * 6 tris per hex
     GLuint bufferAmount = 2; // multiply the result by this amount for fudging
     
-    return width * height * verticesPerCell * floatsPerVertex * bufferAmount;
+    return width * length * verticesPerCell * floatsPerVertex * bufferAmount;
 }
 
 GLuint Mesh::CalculateIndexBufferMaxSize() {
     GLuint indicesPerCell = 18;
     GLuint bufferAmount = 2;
     
-    return width * height * indicesPerCell * bufferAmount;
+    return width * length * indicesPerCell * bufferAmount;
 }

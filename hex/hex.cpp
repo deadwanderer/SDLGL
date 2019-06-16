@@ -20,7 +20,6 @@
 #include "../include/glad.h"
 #include "../include/SDL.h"
 
-#include "hex_metrics.h"
 #include "Game.h"
 
 #undef main

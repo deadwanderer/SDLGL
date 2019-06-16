@@ -4,7 +4,8 @@
 
 #include <iostream>
 
-InputManager::InputManager() {
+InputManager::InputManager(Game* game) {
+    this->game = game;
     holdTime = 0.3f;
     for (GLuint i = 0; i < KeyCount; i++) {
         lastState[i] = GL_FALSE;
@@ -17,7 +18,14 @@ InputManager::~InputManager() {
     
 }
 
-void InputManager::Update(float dt) {
+void InputManager::Update(float dt, GLboolean *running) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            *running = false;
+        }
+    }
+    
     const Uint8* keyState = SDL_GetKeyboardState(NULL);
     
     for (GLuint i = 0; i < KeyCount; i++) {

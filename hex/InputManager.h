@@ -1,4 +1,9 @@
+#ifndef _INPUT_MANAGER_H
+#define _INPUT_MANAGER_H
+
 #include "../include/glad.h"
+
+class Game;
 
 enum GameKeys {
     KeyW = 0,
@@ -22,10 +27,10 @@ enum GameKeys {
 
 class InputManager {
     public:
-    InputManager();
+    InputManager(Game* game);
     ~InputManager();
     
-    void Update(float dt);
+    void Update(float dt, GLboolean* running);
     void SetHoldActivateTime(float newHoldTime);
     GLboolean IsKeyDown(GLuint key);
     GLboolean IsKeyUp(GLuint key);
@@ -39,4 +44,7 @@ class InputManager {
     GLboolean currentState[KeyCount];
     float timeDown[KeyCount];
     float holdTime;
+    Game* game;
 };
+
+#endif

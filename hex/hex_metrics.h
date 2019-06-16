@@ -13,43 +13,45 @@ enum HexDirection {
     HexDirection_NW
 };
 
-HexDirection GetHexDirOpposite(HexDirection direction) {
-    HexDirection Result;
-    
-    if ((int)direction < 3) {
-        Result = (HexDirection)(direction + 3);
-    }
-    else {
-        Result = (HexDirection)(direction - 3);
-    }
-    
-    return(Result);
-}
-
-HexDirection GetHexDirPrevious(HexDirection direction) {
-    HexDirection Result;
-    if (direction == HexDirection_NE) {
-        Result = HexDirection_NW;
-    }
-    else {
-        Result = (HexDirection)(direction - 1);
+static class HexDirectionHelper {
+    HexDirection GetHexDirOpposite(HexDirection direction) {
+        HexDirection Result;
+        
+        if ((int)direction < 3) {
+            Result = (HexDirection)(direction + 3);
+        }
+        else {
+            Result = (HexDirection)(direction - 3);
+        }
+        
+        return(Result);
     }
     
-    return(Result);
-}
-
-HexDirection GetHexDirNext(HexDirection direction) {
-    HexDirection Result;
-    
-    if (direction == HexDirection_NW) {
-        Result = HexDirection_NE;
+    HexDirection GetHexDirPrevious(HexDirection direction) {
+        HexDirection Result;
+        if (direction == HexDirection_NE) {
+            Result = HexDirection_NW;
+        }
+        else {
+            Result = (HexDirection)(direction - 1);
+        }
+        
+        return(Result);
     }
-    else {
-        Result = (HexDirection)(direction + 1);
-    }
     
-    return(Result);
-}
+    HexDirection GetHexDirNext(HexDirection direction) {
+        HexDirection Result;
+        
+        if (direction == HexDirection_NW) {
+            Result = HexDirection_NE;
+        }
+        else {
+            Result = (HexDirection)(direction + 1);
+        }
+        
+        return(Result);
+    }
+} HexDirectionHelper;
 
 enum HexEdgeType {
     HexEdge_Flat,
@@ -151,9 +153,6 @@ static class HexMetrics {
     }
 } HexMetrics;
 
-int Round(float num) {
-    return (num - floor(num) > 0.5f) ? (int)ceil(num) : (int)floor(num);
-}
 
 class HexCoordinates {
     public:
@@ -199,7 +198,10 @@ class HexCoordinates {
         _y = -_x - _z;
     }
     
-    
+    private:
+    int Round(float num) {
+        return (num - floor(num) > 0.5f) ? (int)ceil(num) : (int)floor(num);
+    }
 };
 
 #endif

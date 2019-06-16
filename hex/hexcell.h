@@ -1,3 +1,6 @@
+#ifndef _HEX_CELL_H
+#define _HEX_CELL_H
+
 #include "../include/glm/glm.hpp"
 #include "hex_metrics.h"
 
@@ -42,3 +45,5 @@ struct HexCell {
         Position = pos;
     }
 };
+
+#endif

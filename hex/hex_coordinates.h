@@ -1,3 +1,6 @@
+#ifndef _HEX_COORDINATES_H
+#define _HEX_COORDINATES_H
+
 #include "../include/glm/glm.hpp"
 
 struct HexCoordinates {
@@ -19,3 +22,5 @@ struct HexCoordinates {
         
     }
 } HexCoordinates;
+
+#endif

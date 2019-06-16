@@ -1,12 +1,13 @@
-#include "GameClock.h"
+#include "Clock.h"
 
-Clock::Clock() {
+Clock::Clock(Game* game) {
+    gameRef = game;
     frameHistoryPointer = 0;
     appStartTime = 0;
     currentTick = 0;
     lastTick = 0;
     for (unsigned int i = 0; i < FRAME_HISTORY_LENGTH; i++) {
-        frameHistory[i] = 0.0f;
+        frameHistory[i] = 0;
     }
     deltaTime = 0.0f;
 }
@@ -21,11 +22,11 @@ void Clock::Update() {
     lastTick = currentTick;
     currentTick = SDL_GetTicks();
     unsigned int deltaTicks = currentTick - lastTick;
-    fpsTick += deltaTick;
+    fpsTick += deltaTicks;
     
-    deltaTime = (float)(deltaTick) / 1000.0f;
+    deltaTime = (float)(deltaTicks) / 1000.0f;
     
-    frameHistory[frameHistoryPointer++] = deltaTick;
+    frameHistory[frameHistoryPointer++] = deltaTicks;
     if (frameHistoryPointer >= FRAME_HISTORY_LENGTH) {
         frameHistoryPointer = 0;
     }
@@ -50,6 +51,10 @@ float Clock::GetAverageFrameTime() {
 
 float Clock::GetFPS() {
     return fps;
+}
+
+unsigned int Clock::GetLastTick() {
+    return frameHistory[frameHistoryPointer];
 }
 
 void Clock::UpdateFPS() {

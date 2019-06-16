@@ -1,8 +1,13 @@
+#ifndef _CLOCK_H
+#define _CLOCK_H
+
 #include "../include/SDL.h"
+
+class Game;
 
 class Clock {
     public:
-    Clock();
+    Clock(Game* game);
     ~Clock();
     
     void Initialize();
@@ -11,6 +16,7 @@ class Clock {
     float GetDeltaTime();
     float GetAverageFrameTime();
     float GetFPS();
+    unsigned int GetLastTick();
     
     private:
     unsigned int appStartTime;
@@ -19,9 +25,9 @@ class Clock {
     unsigned int lastTick;
     unsigned int fpsTick;
     
-    unsigned int FPS_UPDATE_TICKS = 1000;
+    static const unsigned int FPS_UPDATE_TICKS = 1000;
     
-    unsigned int FRAME_HISTORY_LENGTH = 100;
+    static const unsigned int FRAME_HISTORY_LENGTH = 100;
     
     unsigned int frameHistoryPointer;
     unsigned int frameHistory[FRAME_HISTORY_LENGTH];
@@ -30,5 +36,9 @@ class Clock {
     float fps;
     float averageFrameTime;
     
+    Game* gameRef;
+    
     void UpdateFPS();
 };
+
+#endif
