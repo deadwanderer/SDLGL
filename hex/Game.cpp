@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-Game::Game() {
+Game::Game(SDL_Window *winPtr) {
+    window = winPtr;
     std::cout << "Created game." << std::endl;
 }
 
@@ -58,6 +59,10 @@ void Game::Update() {
 
 void Game::Render() {
     shouldRender = false;
+    glClearColor(0.07f, 0.38f, 0.50f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Grid->Render();
+
+    SDL_GL_SwapWindow(window);
     //std::cout << "Game render." << std::endl;
 }

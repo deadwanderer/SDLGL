@@ -2,31 +2,33 @@
 #define _HEXGAME_H
 
 #include "../include/Camera.h"
-#include "hexgrid.h"
-#include "InputManager.h"
 #include "Clock.h"
+#include "InputManager.h"
+#include "hexgrid.h"
 
+#include "../include/SDL.h"
 #include "../include/glad.h"
 
 class Game {
-    public:
-    Game();
+  public:
+    Game(SDL_Window *winPtr);
     ~Game();
-    
+
     void Initialize();
     void Run();
     void Update();
     void Render();
-    
-    Camera* GameCamera;
-    InputManager* Input;
-    HexGrid* Grid;
-    Clock* GameClock;
-    
-    private:
+
+    Camera *GameCamera;
+    InputManager *Input;
+    HexGrid *Grid;
+    Clock *GameClock;
+
+  private:
     GLboolean running;
     GLboolean shouldRender;
-    
+    SDL_Window *window;
+
     const float renderTime = 1.0f / 60.0f;
     float elapsedRender = 0.0f;
 };
