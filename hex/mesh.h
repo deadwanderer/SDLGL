@@ -13,11 +13,16 @@ struct MeshData {
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec3> colors;
+    
+    void Clear() {
+        vertices.clear();
+        normals.clear();
+        colors.clear();
+    }
 };
 
 struct TexturedMeshData {
     std::vector<glm::vec3> vertices;
-    std::vector<GLuint> indices;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> texCoords;
 };
@@ -29,7 +34,8 @@ class Mesh {
     ~Mesh();
     
     void Initialize();
-    void Triangulate();
+    void Triangulate(HexCell* cells, unsigned int cellCount);
+    void Triangulate(HexCell *cell);
     void Update();
     void Render();
     
@@ -41,9 +47,9 @@ class Mesh {
     
     private:
     void AddTriangle(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
-    void AddTriangleColor(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3);
+    void AddTriangleColors(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3);
     void AddQuad(glm::vec3 v1, glm::vec2 v2, glm::vec3 v3, glm::vec3 v4);
-    void AddQuadColor(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 c4);
+    void AddQuadColors(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 c4);
     void RecalculateNormals();
     
     GLuint CalculateVertexBufferMaxSize();
@@ -54,9 +60,12 @@ class Mesh {
     Shader meshShader;
     GLuint meshVAO, meshVBO, meshEBO;
     GLuint vertexCount, indexCount, normalCount, colorCount;
+    GLuint lastVertexCount, lastIndexCount, lastNormalCount, lastColorCount;
     GLuint maxVertexBufferSize, maxIndexBufferSize;
     
     GLboolean dirty;
+    GLboolean verticesChanged;
+    GLboolean indicesChanged;
 };
 
 #endif

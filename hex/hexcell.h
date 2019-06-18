@@ -39,10 +39,8 @@ struct HexCell {
     
     void SetElevation(int value) {
         elevation = value;
-        glm::vec3 pos = Position;
-        pos.y = value * HexMetrics.elevationStep;
-        //pos.y += (HexMetrics.SampleNoise(pos).y * 2.0f - 1.0f) * HexMetrics.elevationPerturbStrength;
-        Position = pos;
+        Position.y = value * HexMetrics.elevationStep;
+        //Position.y += (HexMetrics.SampleNoise(pos).y * 2.0f - 1.0f) * HexMetrics.elevationPerturbStrength;
     }
 };
 

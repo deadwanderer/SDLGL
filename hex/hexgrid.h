@@ -1,7 +1,7 @@
 #ifndef _HEXGRID_H
 #define _HEXGRID_H
 
-//#include "hexcell.h"
+#include "hexcell.h"
 #include "mesh.h"
 
 class Game;
@@ -14,15 +14,17 @@ class HexGrid {
     
     void Initialize();
     void Update();
+    void Triangulate();
     void Render();
     
     private:
     void CreateCell(GLint x, GLint z, GLint i);
     
-    //HexCell cells[];
+    HexCell *cells;
     GLuint width, length;
     Mesh* mesh;
     Game* gameRef;
+    GLboolean dirty;
 };
 
 #endif
