@@ -14,6 +14,7 @@ enum HexDirection {
 };
 
 static class HexDirectionHelper {
+    public:
     HexDirection GetHexDirOpposite(HexDirection direction) {
         HexDirection Result;
         

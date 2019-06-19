@@ -4,8 +4,6 @@
 #include "hexcell.h"
 #include "mesh.h"
 
-class Game;
-
 class HexGrid {
     public:
     HexGrid(Game* game);

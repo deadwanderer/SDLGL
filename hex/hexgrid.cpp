@@ -4,7 +4,7 @@ HexGrid::HexGrid(Game* game) {
     gameRef = game;
     width = 6;
     length = 6;
-    mesh = new Mesh(width, length);
+    mesh = new Mesh(gameRef, width, length);
     cells = new HexCell[width * length];
 }
 
@@ -12,7 +12,7 @@ HexGrid::HexGrid(Game* game, GLuint gridWidth, GLuint gridLength) {
     gameRef = game;
     width = gridWidth;
     length = gridLength;
-    mesh = new Mesh(width, length);
+    mesh = new Mesh(gameRef, width, length);
     cells = new HexCell[width * length];
 }
 
@@ -31,6 +31,7 @@ void HexGrid::Initialize() {
             CreateCell(x, z, i++);
         }
     }
+    dirty = true;
     Triangulate();
 }
 
@@ -42,6 +43,7 @@ void HexGrid::Update() {
 
 void Triangulate() {
     mesh->Triangulate(cells);
+    dirty = false;
 }
 
 void HexGrid::Render() {

@@ -37,6 +37,7 @@ class Camera {
     glm::vec3 Up;
     glm::vec3 Right;
     glm::vec3 WorldUp;
+    float AspectRatio;
     
     // Euler angles
     float Yaw;
@@ -70,6 +71,11 @@ class Camera {
     // Returns the view matrix calculated using Euler angles and the LookAt matrix
     glm::mat4 GetViewMatrix() {
         return glm::lookAt(Position, Position + Front, Up);
+    }
+    
+    // Return the projection matrix
+    glm::mat4 GetProjectionMatrix() {
+        return glm::perspective(glm::radians(Zoom), AspectRatio, 0.1f, 100.0f);
     }
     
     // Processes input received from any keyboard-like input system.

@@ -78,10 +78,16 @@ void InputManager::Update(float dt, GLboolean *running) {
     if (keyState[SDL_SCANCODE_SPACE]) {
         currentState[KeySpace] = GL_TRUE;
     }
+    if (keyState[SDL_SCANCODE_LSHIFT]) {
+        currentState[KeyLShift] = GL_TRUE;
+    }
     
     for (GLuint i = 0; i < KeyCount; i++) {
         if (lastState[i] == GL_TRUE && currentState[i] == GL_TRUE) {
             timeDown[i] += dt;
+        }
+        else {
+            timeDown[i] = 0.0f;
         }
     }
 }

@@ -8,6 +8,8 @@
 
 #include "hex_metrics.h"
 #include "../include/Shader.h"
+#include "hexcell.h"
+#include "Game.h"
 
 struct MeshData {
     std::vector<glm::vec3> vertices;
@@ -29,13 +31,14 @@ struct TexturedMeshData {
 
 class Mesh {
     public:
-    Mesh();
-    Mesh(GLuint cellsWide, GLuint cellsLong);
+    Mesh(Game* gameRef);
+    Mesh(Game* gameRef, GLuint cellsWide, GLuint cellsLong);
     ~Mesh();
     
     void Initialize();
     void Triangulate(HexCell* cells, unsigned int cellCount);
     void Triangulate(HexCell *cell);
+    void Triangulate(HexDirection direction, HexCell* cell);
     void Update();
     void Render();
     
@@ -47,6 +50,7 @@ class Mesh {
     
     private:
     void AddTriangle(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3);
+    void AddTriangleColors(glm::vec3 color);
     void AddTriangleColors(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3);
     void AddQuad(glm::vec3 v1, glm::vec2 v2, glm::vec3 v3, glm::vec3 v4);
     void AddQuadColors(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 c4);
@@ -54,6 +58,8 @@ class Mesh {
     
     GLuint CalculateVertexBufferMaxSize();
     GLuint CalculateIndexBufferMaxSize();
+    
+    Game* gameRef;
     
     GLuint width, length;
     

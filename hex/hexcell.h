@@ -9,7 +9,7 @@ struct HexCell {
     glm::vec3 Position;
     glm::vec3 Scale;
     glm::vec3 Color;
-    HexCoordinates Coordinates;
+    //HexCoordinates Coordinates;
     HexCell *neighbors[6];
     
     HexCell() {
@@ -22,7 +22,7 @@ struct HexCell {
     
     void SetNeighbor(HexDirection direction, HexCell *cell) {
         neighbors[direction] = cell;
-        cell->neighbors[GetHexDirOpposite(direction)] = *this;
+        *cell->neighbors[HexDirectionHelper.GetHexDirOpposite(direction)] = *this;
     }
     
     HexEdgeType GetEdgeTypeFromDirection(HexDirection direction) {

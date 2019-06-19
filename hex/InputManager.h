@@ -21,8 +21,9 @@ enum GameKeys {
     KeyEscape = 12,
     KeyEnter = 13,
     KeySpace = 14,
+    KeyLShift = 15,
     
-    KeyCount = 15
+    KeyCount = 16
 };
 
 class InputManager {

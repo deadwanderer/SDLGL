@@ -1,13 +1,15 @@
 #include "mesh.h"
 
-Mesh::Mesh() : meshShader("meshShader.vs", "meshShader.fs") {
+Mesh::Mesh(Game* gameRef) : meshShader("meshShader.vs", "meshShader.fs") {
+    this->gameRef = gameRef;
     width = length = 5;
     
     vertexCount = indexCount = normalCount = colorCount = 0;
     dirty = true;
 }
 
-Mesh::Mesh(GLuint cellsWide, GLuint cellsLong) : meshShader("meshShader.vs", "meshShader.fs") {
+Mesh::Mesh(Game* gameRef, GLuint cellsWide, GLuint cellsLong) : meshShader("meshShader.vs", "meshShader.fs") {
+    this->gameRef = gameRef;
     width = cellsWide;
     length = cellsLong;
     
@@ -22,33 +24,76 @@ Mesh::~Mesh() {
 }
 
 void Mesh::Triangulate(HexCell* cells, unsigned int cellCount) {
-    lastVertexCount = meshData.vertices.size();
-    lastNormalCount = meshData.normals.size();
-    lastColorCount = meshData.colors.size();
-    lastIndexCount = indices.size();
+    lastVertexCount = (GLuint)meshData.vertices.size();
+    lastNormalCount = (GLuint)meshData.normals.size();
+    lastColorCount = (GLuint)meshData.colors.size();
+    lastIndexCount = (GLuint)indices.size();
     
     meshData.Clear();
     indices.clear();
     
     for (unsigned int i = 0; i < cellCount; i++) {
-        Triangulate(cells[i]);
+        Triangulate(&cells[i]);
     }
     
     RecalculateNormals();
+    verticesChanged = true;
+    indicesChanged = true;
 }
 
 void Mesh::Triangulate(HexCell *cell) {
-    
+    glm::vec3 center = cell->Position;
+    for (unsigned int i = 0; i < 6; i++) {
+        AddTriangle(
+            center,
+            center + HexMetrics.corners[i],
+            center + HexMetrics.corners[i+1]
+            );
+        AddTriangleColors(glm::vec3(0.8f, 0.2f, 0.3f));
+    }
+    /*
+for (HexDirection d = HexDirection::NE; d <= HexDirection::NW; d++) {
+        Triangulate(d, cell);
+    }
+*/
+}
+
+void Mesh::Triangulate(HexDirection direction, HexCell* cell) {
+    glm::vec3 center = cell->Position;
 }
 
 void Mesh::Update() {
-    if (dirty) {
-        Triangulate();
-    }
+    
 }
 
 void Mesh::Render() {
+    glBindVertexArray(meshVAO);
+    if (verticesChanged) {
+        size_t vertSize = meshData.vertices.size() * 3 * sizeof(float);
+        size_t normSize = meshData.normals.size() * 3 * sizeof(float);
+        size_t colorSize = meshData.colors.size() * 3 * sizeof(float);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vertSize, &meshData.vertices[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, vertSize, normSize, &meshData.normals[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, vertSize + normSize, colorSize, &meshData.colors[0]);
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)vertSize);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(vertSize + normSize));
+    }
+    if (indicesChanged) {
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(unsigned int), &indices[0]);
+    }
     
+    meshShader.use();
+    glm::mat4 MVP = gameRef->GameCamera->GetProjectionMatrix() * 
+        gameRef->GameCamera->GetViewMatrix() * glm::mat4(1.0);
+    meshShader.setMat4("MVP", MVP);
+    
+    glDrawElements(GL_TRIANGLES, indices.size() / 3, GL_UNSIGNED_INT, 0);
+    
+    glBindVertexArray(0);
 }
 
 void Mesh::Initialize() {
@@ -87,9 +132,18 @@ void Mesh::AddTriangle(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3) {
     meshData.vertices.push_back(v1);
     meshData.vertices.push_back(v2);
     meshData.vertices.push_back(v3);
+    meshData.normals.push_back(glm::vec3(0.0f));
+    meshData.normals.push_back(glm::vec3(0.0f));
+    meshData.normals.push_back(glm::vec3(0.0f));
     indices.push_back(vertexCount++);
     indices.push_back(vertexCount++);
     indices.push_back(vertexCount++);
+}
+
+void Mesh::AddTriangleColors(glm::vec3 color) {
+    meshData.colors.push_back(color);
+    meshData.colors.push_back(color);
+    meshData.colors.push_back(color);
 }
 
 void Mesh::AddTriangleColors(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3) {
@@ -104,6 +158,10 @@ void Mesh::AddQuad(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4) {
     meshData.vertices.push_back(v2);
     meshData.vertices.push_back(v3);
     meshData.vertices.push_back(v4);
+    meshData.normals.push_back(glm::vec3(0.0f));
+    meshData.normals.push_back(glm::vec3(0.0f));
+    meshData.normals.push_back(glm::vec3(0.0f));
+    meshData.normals.push_back(glm::vec3(0.0f));
     
     // TODO(anthony): Add indices!
 }
@@ -116,7 +174,23 @@ void Mesh::AddQuadColors(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 c4)
 }
 
 void Mesh::RecalculateNormals() {
+    for (unsigned int i = 0; i < indices.size() / 3; i++) {
+        int index1 = indices[i*3];
+        int index2 = indices[i*3+1];
+        int index3 = indices[i*3+2];
+        
+        glm::vec3 side1 = meshData.vertices[index1] - meshData.vertices[index3];
+        glm::vec3 side2 = meshData.vertices[index1] - meshData.vertices[index2];
+        glm::vec3 normal = glm::cross(side1, side2);
+        
+        meshData.normals[index1] += normal;
+        meshData.normals[index2] += normal;
+        meshData.normals[index3] += normal;
+    }
     
+    for (unsigned int i = 0; i < meshData.normals.size(); i++) {
+        meshData.normals[i] = glm::normalize(meshData.normals[i]);
+    }
 }
 
 GLuint Mesh::CalculateVertexBufferMaxSize() {
