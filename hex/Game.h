@@ -19,9 +19,10 @@ class Game {
     void Update();
     void Render();
 
-    static Camera *GameCamera;
+    Camera *GameCamera;
     InputManager *Input;
     Clock *GameClock;
+    HexGrid *Grid;
 
     unsigned int ScreenWidth;
     unsigned int ScreenHeight;
@@ -30,8 +31,6 @@ class Game {
     GLboolean running;
     GLboolean shouldRender;
     SDL_Window *window;
-
-    HexGrid Grid;
 
     const float renderTime = 1.0f / 60.0f;
     float elapsedRender = 0.0f;

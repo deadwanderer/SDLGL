@@ -1,23 +1,27 @@
 #ifndef _HEXGRID_H
 #define _HEXGRID_H
 
-class Game;
+#include "../include/Camera.h"
 #include "mesh.h"
 
 class HexGrid {
   public:
-    HexGrid() {
+    HexGrid(Camera *gameCamera) {
+        cam = gameCamera;
         width = 6;
         length = 6;
+        cellCount = width * length;
         mesh = new Mesh(width, length);
-        cells = new HexCell[width * length];
+        cells = new HexCell[cellCount];
     }
 
-    HexGrid(GLuint gridWidth, GLuint gridLength) {
+    HexGrid(Camera *gameCamera, GLuint gridWidth, GLuint gridLength) {
+        cam = gameCamera;
         width = gridWidth;
         length = gridLength;
+        cellCount = width * length;
         mesh = new Mesh(width, length);
-        cells = new HexCell[width * length];
+        cells = new HexCell[cellCount];
     }
     ~HexGrid() {
         delete mesh;
@@ -45,13 +49,13 @@ class HexGrid {
     }
 
     void Triangulate() {
-        mesh->Triangulate(cells);
+        mesh->Triangulate(cells, cellCount);
         dirty = false;
     }
 
     void Render() {
-        glm::mat4 MVP = GameCamera->GetProjectionMatrix() *
-                        GameCamera->GetViewMatrix() *
+        glm::mat4 MVP = cam->GetProjectionMatrix() *
+                        cam->GetViewMatrix() *
                         glm::mat4(1.0f);
         mesh->Render(MVP);
     }
@@ -67,9 +71,10 @@ class HexGrid {
     }
 
     HexCell *cells;
-    GLuint width, length;
+    GLuint width, length, cellCount;
     Mesh *mesh;
     GLboolean dirty;
+    Camera *cam;
 };
 
 #endif

@@ -20,9 +20,9 @@ void Game::Initialize() {
     GameCamera->AspectRatio = (float)ScreenWidth / (float)ScreenHeight;
     Input = new InputManager(this);
     GameClock = new Clock();
-
     GameClock->Initialize();
-    Grid.Initialize();
+    Grid = new HexGrid(GameCamera);
+    Grid->Initialize();
 
     running = true;
     shouldRender = false;
@@ -71,7 +71,7 @@ void Game::Update() {
     if (Input->IsKeyDown(KeyE) || Input->IsKeyDown(KeyLShift)) {
         GameCamera->ProcessKeyboard(DOWN, GameClock->GetDeltaTime());
     }
-    Grid.Update();
+    Grid->Update();
 
     //std::cout << "Game update at " << GameClock->GetLastTick() << " ticks." << std::endl;
 }
@@ -80,7 +80,7 @@ void Game::Render() {
     shouldRender = false;
     glClearColor(0.07f, 0.38f, 0.50f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    Grid.Render();
+    Grid->Render();
 
     SDL_GL_SwapWindow(window);
     //std::cout << "Game render." << std::endl;
