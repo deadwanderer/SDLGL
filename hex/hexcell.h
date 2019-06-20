@@ -11,32 +11,31 @@ struct HexCell {
     glm::vec3 Color;
     //HexCoordinates Coordinates;
     HexCell *neighbors[6];
-    
+
     HexCell() {
-        
     }
-    
-    HexCell* GetNeighbor(HexDirection direction) {
+
+    HexCell *GetNeighbor(HexDirection direction) {
         return neighbors[direction];
     }
-    
+
     void SetNeighbor(HexDirection direction, HexCell *cell) {
         neighbors[direction] = cell;
         *cell->neighbors[HexDirectionHelper.GetHexDirOpposite(direction)] = *this;
     }
-    
+
     HexEdgeType GetEdgeTypeFromDirection(HexDirection direction) {
         return HexMetrics.GetEdgeType(elevation, neighbors[direction]->elevation);
     }
-    
+
     HexEdgeType GetEdgeTypeFromCell(HexCell *otherCell) {
         return HexMetrics.GetEdgeType(elevation, otherCell->elevation);
     }
-    
+
     int GetElevation() {
         return elevation;
     }
-    
+
     void SetElevation(int value) {
         elevation = value;
         Position.y = value * HexMetrics.elevationStep;

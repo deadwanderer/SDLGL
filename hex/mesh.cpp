@@ -1,18 +1,16 @@
 #include "mesh.h"
 
-Mesh::Mesh(Game* gameRef) : meshShader("meshShader.vs", "meshShader.fs") {
-    this->gameRef = gameRef;
+Mesh::Mesh() : meshShader("meshShader.vs", "meshShader.fs") {
     width = length = 5;
-    
+
     vertexCount = indexCount = normalCount = colorCount = 0;
     dirty = true;
 }
 
-Mesh::Mesh(Game* gameRef, GLuint cellsWide, GLuint cellsLong) : meshShader("meshShader.vs", "meshShader.fs") {
-    this->gameRef = gameRef;
+Mesh::Mesh(GLuint cellsWide, GLuint cellsLong) : meshShader("meshShader.vs", "meshShader.fs") {
     width = cellsWide;
     length = cellsLong;
-    
+
     vertexCount = indexCount = normalCount = colorCount = 0;
     dirty = true;
 }
@@ -23,19 +21,19 @@ Mesh::~Mesh() {
     glDeleteVertexArrays(1, &meshVAO);
 }
 
-void Mesh::Triangulate(HexCell* cells, unsigned int cellCount) {
+void Mesh::Triangulate(HexCell *cells, unsigned int cellCount) {
     lastVertexCount = (GLuint)meshData.vertices.size();
     lastNormalCount = (GLuint)meshData.normals.size();
     lastColorCount = (GLuint)meshData.colors.size();
     lastIndexCount = (GLuint)indices.size();
-    
+
     meshData.Clear();
     indices.clear();
-    
+
     for (unsigned int i = 0; i < cellCount; i++) {
         Triangulate(&cells[i]);
     }
-    
+
     RecalculateNormals();
     verticesChanged = true;
     indicesChanged = true;
@@ -47,8 +45,7 @@ void Mesh::Triangulate(HexCell *cell) {
         AddTriangle(
             center,
             center + HexMetrics.corners[i],
-            center + HexMetrics.corners[i+1]
-            );
+            center + HexMetrics.corners[i + 1]);
         AddTriangleColors(glm::vec3(0.8f, 0.2f, 0.3f));
     }
     /*
@@ -58,15 +55,14 @@ for (HexDirection d = HexDirection::NE; d <= HexDirection::NW; d++) {
 */
 }
 
-void Mesh::Triangulate(HexDirection direction, HexCell* cell) {
-    glm::vec3 center = cell->Position;
+void Mesh::Triangulate(HexDirection direction, HexCell *cell) {
+    //glm::vec3 center = cell->Position;
 }
 
 void Mesh::Update() {
-    
 }
 
-void Mesh::Render() {
+void Mesh::Render(glm::mat4 MVP) {
     glBindVertexArray(meshVAO);
     if (verticesChanged) {
         size_t vertSize = meshData.vertices.size() * 3 * sizeof(float);
@@ -79,20 +75,18 @@ void Mesh::Render() {
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)vertSize);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(vertSize + normSize));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)vertSize);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)(vertSize + normSize));
     }
     if (indicesChanged) {
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(unsigned int), &indices[0]);
     }
-    
+
     meshShader.use();
-    glm::mat4 MVP = gameRef->GameCamera->GetProjectionMatrix() * 
-        gameRef->GameCamera->GetViewMatrix() * glm::mat4(1.0);
     meshShader.setMat4("MVP", MVP);
-    
+
     glDrawElements(GL_TRIANGLES, indices.size() / 3, GL_UNSIGNED_INT, 0);
-    
+
     glBindVertexArray(0);
 }
 
@@ -100,20 +94,20 @@ void Mesh::Initialize() {
     // First, calculate a max buffer size.
     maxVertexBufferSize = CalculateVertexBufferMaxSize();
     maxIndexBufferSize = CalculateIndexBufferMaxSize();
-    
+
     glGenVertexArrays(1, &meshVAO);
     glGenBuffers(1, &meshVBO);
     glGenBuffers(1, &meshEBO);
-    
+
     glBindVertexArray(meshVAO);
     glBindBuffer(GL_ARRAY_BUFFER, meshVBO);
     glBufferData(GL_ARRAY_BUFFER, maxVertexBufferSize * sizeof(GLfloat), 0, GL_DYNAMIC_DRAW);
-    
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, maxIndexBufferSize * sizeof(GLuint), 0, GL_DYNAMIC_DRAW);
-    
+
     // TODO(anthony): Complete mesh initialization
-    
+
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -162,7 +156,7 @@ void Mesh::AddQuad(glm::vec3 v1, glm::vec3 v2, glm::vec3 v3, glm::vec3 v4) {
     meshData.normals.push_back(glm::vec3(0.0f));
     meshData.normals.push_back(glm::vec3(0.0f));
     meshData.normals.push_back(glm::vec3(0.0f));
-    
+
     // TODO(anthony): Add indices!
 }
 
@@ -175,19 +169,19 @@ void Mesh::AddQuadColors(glm::vec3 c1, glm::vec3 c2, glm::vec3 c3, glm::vec3 c4)
 
 void Mesh::RecalculateNormals() {
     for (unsigned int i = 0; i < indices.size() / 3; i++) {
-        int index1 = indices[i*3];
-        int index2 = indices[i*3+1];
-        int index3 = indices[i*3+2];
-        
+        int index1 = indices[i * 3];
+        int index2 = indices[i * 3 + 1];
+        int index3 = indices[i * 3 + 2];
+
         glm::vec3 side1 = meshData.vertices[index1] - meshData.vertices[index3];
         glm::vec3 side2 = meshData.vertices[index1] - meshData.vertices[index2];
         glm::vec3 normal = glm::cross(side1, side2);
-        
+
         meshData.normals[index1] += normal;
         meshData.normals[index2] += normal;
         meshData.normals[index3] += normal;
     }
-    
+
     for (unsigned int i = 0; i < meshData.normals.size(); i++) {
         meshData.normals[i] = glm::normalize(meshData.normals[i]);
     }
@@ -197,13 +191,13 @@ GLuint Mesh::CalculateVertexBufferMaxSize() {
     GLuint floatsPerVertex = 9;  // 3 for position, three for normal, three for color
     GLuint verticesPerCell = 18; // 3 vertices per tri * 6 tris per hex
     GLuint bufferAmount = 2;     // multiply the result by this amount for fudging
-    
+
     return width * length * verticesPerCell * floatsPerVertex * bufferAmount;
 }
 
 GLuint Mesh::CalculateIndexBufferMaxSize() {
     GLuint indicesPerCell = 18;
     GLuint bufferAmount = 2;
-    
+
     return width * length * indicesPerCell * bufferAmount;
 }

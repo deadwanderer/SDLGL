@@ -1,7 +1,6 @@
 #include "Clock.h"
 
-Clock::Clock(Game* game) {
-    gameRef = game;
+Clock::Clock() {
     frameHistoryPointer = 0;
     appStartTime = 0;
     currentTick = 0;
@@ -23,14 +22,14 @@ void Clock::Update() {
     currentTick = SDL_GetTicks();
     unsigned int deltaTicks = currentTick - lastTick;
     fpsTick += deltaTicks;
-    
+
     deltaTime = (float)(deltaTicks) / 1000.0f;
-    
+
     frameHistory[frameHistoryPointer++] = deltaTicks;
     if (frameHistoryPointer >= FRAME_HISTORY_LENGTH) {
         frameHistoryPointer = 0;
     }
-    
+
     if (fpsTick >= FPS_UPDATE_TICKS) {
         fpsTick -= FPS_UPDATE_TICKS;
         UpdateFPS();
@@ -61,7 +60,8 @@ void Clock::UpdateFPS() {
     unsigned int sumTimes = 0;
     unsigned int timeCounts = 0;
     for (unsigned int i = 0; i < FRAME_HISTORY_LENGTH; i++) {
-        if (frameHistory[i] == 0) continue;
+        if (frameHistory[i] == 0)
+            continue;
         sumTimes += frameHistory[i];
         timeCounts++;
     }

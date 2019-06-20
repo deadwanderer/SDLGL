@@ -3,13 +3,11 @@
 
 #include "../include/SDL.h"
 
-class Game;
-
 class Clock {
-    public:
-    Clock(Game* game);
+  public:
+    Clock();
     ~Clock();
-    
+
     void Initialize();
     void Update();
     float GetTimeSinceAppStart();
@@ -17,27 +15,25 @@ class Clock {
     float GetAverageFrameTime();
     float GetFPS();
     unsigned int GetLastTick();
-    
-    private:
+
+  private:
     unsigned int appStartTime;
-    
+
     unsigned int currentTick;
     unsigned int lastTick;
     unsigned int fpsTick;
-    
+
     static const unsigned int FPS_UPDATE_TICKS = 1000;
-    
+
     static const unsigned int FRAME_HISTORY_LENGTH = 100;
-    
+
     unsigned int frameHistoryPointer;
     unsigned int frameHistory[FRAME_HISTORY_LENGTH];
-    
+
     float deltaTime;
     float fps;
     float averageFrameTime;
-    
-    Game* gameRef;
-    
+
     void UpdateFPS();
 };
 

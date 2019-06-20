@@ -13,19 +13,17 @@ Game::~Game() {
     delete GameCamera;
     delete Input;
     delete GameClock;
-    delete Grid;
 }
 
 void Game::Initialize() {
-    GameCamera = new Camera(this);
+    GameCamera = new Camera();
     GameCamera->AspectRatio = (float)ScreenWidth / (float)ScreenHeight;
     Input = new InputManager(this);
-    Grid = new HexGrid(this);
-    GameClock = new Clock(this);
-    
+    GameClock = new Clock();
+
     GameClock->Initialize();
-    Grid->Initialize();
-    
+    Grid.Initialize();
+
     running = true;
     shouldRender = false;
     std::cout << "Initialization complete." << std::endl;
@@ -49,9 +47,9 @@ void Game::Update() {
         shouldRender = true;
         elapsedRender -= renderTime;
     }
-    
+
     Input->Update(GameClock->GetDeltaTime(), &running);
-    
+
     if (Input->IsKeyDown(KeyEscape)) {
         running = false;
     }
@@ -73,8 +71,8 @@ void Game::Update() {
     if (Input->IsKeyDown(KeyE) || Input->IsKeyDown(KeyLShift)) {
         GameCamera->ProcessKeyboard(DOWN, GameClock->GetDeltaTime());
     }
-    Grid->Update();
-    
+    Grid.Update();
+
     //std::cout << "Game update at " << GameClock->GetLastTick() << " ticks." << std::endl;
 }
 
@@ -82,8 +80,8 @@ void Game::Render() {
     shouldRender = false;
     glClearColor(0.07f, 0.38f, 0.50f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    Grid->Render();
-    
+    Grid.Render();
+
     SDL_GL_SwapWindow(window);
     //std::cout << "Game render." << std::endl;
 }
