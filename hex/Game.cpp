@@ -2,23 +2,20 @@
 
 #include <iostream>
 
-Game::Game(SDL_Window *winPtr, unsigned int screenWidth, unsigned int screenHeight)
-{
+Game::Game(SDL_Window *winPtr, unsigned int screenWidth, unsigned int screenHeight) {
     window = winPtr;
     this->ScreenWidth = screenWidth;
     this->ScreenHeight = screenHeight;
     //std::cout << "Created game." << std::endl;
 }
 
-Game::~Game()
-{
+Game::~Game() {
     delete GameCamera;
     delete Input;
     delete GameClock;
 }
 
-void Game::Initialize()
-{
+void Game::Initialize() {
     GameCamera = new Camera();
     GameCamera->AspectRatio = (float)ScreenWidth / (float)ScreenHeight;
     Input = new InputManager((unsigned int)ScreenWidth / 2, (unsigned int)ScreenHeight / 2);
@@ -32,25 +29,20 @@ void Game::Initialize()
     //std::cout << "Initialization complete." << std::endl;
 }
 
-void Game::Run()
-{
+void Game::Run() {
     //std::cout << "Game running" << std::endl;
-    while (running)
-    {
+    while (running) {
         Update();
-        if (shouldRender)
-        {
+        if (shouldRender) {
             Render();
         }
     }
 }
 
-void Game::Update()
-{
+void Game::Update() {
     GameClock->Update();
     elapsedRender += GameClock->GetDeltaTime();
-    if (elapsedRender >= renderTime)
-    {
+    if (elapsedRender >= renderTime) {
         //std::cout << "Elapsed time: " << elapsedRender << std::endl;
         shouldRender = true;
         elapsedRender -= renderTime;
@@ -58,36 +50,28 @@ void Game::Update()
 
     Input->Update(GameClock->GetDeltaTime(), &running);
 
-    if (Input->IsKeyDown(KeyEscape))
-    {
+    if (Input->IsKeyDown(KeyEscape)) {
         running = false;
     }
-    if (Input->IsKeyDown(KeyW))
-    {
+    if (Input->IsKeyDown(KeyW)) {
         GameCamera->ProcessKeyboard(FORWARD, GameClock->GetDeltaTime());
     }
-    if (Input->IsKeyDown(KeyS))
-    {
+    if (Input->IsKeyDown(KeyS)) {
         GameCamera->ProcessKeyboard(BACKWARD, GameClock->GetDeltaTime());
     }
-    if (Input->IsKeyDown(KeyA))
-    {
+    if (Input->IsKeyDown(KeyA)) {
         GameCamera->ProcessKeyboard(LEFT, GameClock->GetDeltaTime());
     }
-    if (Input->IsKeyDown(KeyD))
-    {
+    if (Input->IsKeyDown(KeyD)) {
         GameCamera->ProcessKeyboard(RIGHT, GameClock->GetDeltaTime());
     }
-    if (Input->IsKeyDown(KeyQ) || Input->IsKeyDown(KeySpace))
-    {
+    if (Input->IsKeyDown(KeyQ) || Input->IsKeyDown(KeySpace)) {
         GameCamera->ProcessKeyboard(UP, GameClock->GetDeltaTime());
     }
-    if (Input->IsKeyDown(KeyE) || Input->IsKeyDown(KeyLShift))
-    {
+    if (Input->IsKeyDown(KeyE) || Input->IsKeyDown(KeyLShift)) {
         GameCamera->ProcessKeyboard(DOWN, GameClock->GetDeltaTime());
     }
-    if (Input->WasKeyJustPressed(KeyF))
-    {
+    if (Input->WasKeyJustPressed(KeyF)) {
         Input->ToggleCaptureMouse();
     }
     MousePos mouseMovement = Input->GetMouseMovement();
@@ -98,12 +82,11 @@ void Game::Update()
     //std::cout << "Game update at " << GameClock->GetLastTick() << " ticks." << std::endl;
 }
 
-void Game::Render()
-{
+void Game::Render() {
     shouldRender = false;
     glClearColor(0.07f, 0.07f, 0.07f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_DEPTH_TEST);
 
     Grid->Render();
 
