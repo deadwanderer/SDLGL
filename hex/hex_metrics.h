@@ -98,6 +98,16 @@ static class HexMetrics {
         glm::vec3(-innerRadius, 0.0f, -0.5f * outerRadius),
         glm::vec3(-innerRadius, 0.0f, 0.5f * outerRadius),
         glm::vec3(0.0f, 0.0f, outerRadius)};
+    /*
+    glm::vec3 corners[7] = {
+        glm::vec3(outerRadius, 0.0f, 0.0f),
+        glm::vec3(0.5f * outerRadius, 0.0f, innerRadius),
+        glm::vec3(-0.5f * outerRadius, 0.0f, innerRadius),
+        glm::vec3(-outerRadius, 0.0f, 0.0f),
+        glm::vec3(-0.5f * outerRadius, 0.0f, -innerRadius),
+        glm::vec3(0.5f * outerRadius, 0.0f, -innerRadius),
+        glm::vec3(outerRadius, 0.0f, 0.0f)};
+*/
 
     glm::vec3 GetFirstCorner(HexDirection direction) {
         return corners[direction];

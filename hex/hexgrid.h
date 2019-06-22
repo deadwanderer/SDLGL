@@ -3,13 +3,14 @@
 
 #include "../include/Camera.h"
 #include "mesh.h"
+#include <iostream>
 
 class HexGrid {
   public:
     HexGrid(Camera *gameCamera) {
         cam = gameCamera;
-        width = 6;
-        length = 6;
+        width = 2;
+        length = 2;
         cellCount = width * length;
         mesh = new Mesh(width, length);
         cells = new HexCell[cellCount];
@@ -42,9 +43,15 @@ class HexGrid {
         Triangulate();
     }
 
-    void Update() {
+    void Update(float delta) {
         if (dirty) {
             Triangulate();
+        }
+
+        elapsed += delta;
+        if (elapsed >= meshUpdateTime) {
+            mesh->Update();
+            elapsed -= meshUpdateTime;
         }
     }
 
@@ -63,10 +70,11 @@ class HexGrid {
   private:
     void CreateCell(GLuint x, GLuint z, GLuint i) {
         glm::vec3 position;
-        position.x = x * 10.0f;
+        position.x = (x + z * 0.5f - z / 2) * (HexMetrics.innerRadius * 2.0f);
         position.y = 0.0f;
-        position.z = z * 10.0f;
+        position.z = z * (HexMetrics.outerRadius * 1.5f);
 
+        std::cout << "Cell " << i << ": position(" << position.x << ", " << position.z << ")" << std::endl;
         cells[i].Position = position;
     }
 
@@ -75,6 +83,8 @@ class HexGrid {
     Mesh *mesh;
     GLboolean dirty;
     Camera *cam;
+    float elapsed;
+    const float meshUpdateTime = 3.0f;
 };
 
 #endif

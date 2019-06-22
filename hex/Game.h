@@ -30,6 +30,7 @@ class Game {
   private:
     GLboolean running;
     GLboolean shouldRender;
+    GLboolean wireframe;
     SDL_Window *window;
 
     const float renderTime = 1.0f / 60.0f;

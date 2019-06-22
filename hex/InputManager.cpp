@@ -203,6 +203,8 @@ GLboolean InputManager::DidMouseMove() {
 }
 
 MousePos InputManager::GetMouseMovement() {
+    return mouseMovement;
+    /*
     if (captureMouse) {
         return mouseMovement;
     } else {
@@ -211,6 +213,7 @@ MousePos InputManager::GetMouseMovement() {
         result.Y = currentMousePosition.Y - lastMousePosition.Y;
         return result;
     }
+    */
 }
 
 void InputManager::ToggleCaptureMouse() {
