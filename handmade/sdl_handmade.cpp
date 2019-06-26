@@ -314,31 +314,35 @@ SDLLoadGameCode(char *SourceDLLName, char *TempDLLName)
                           Result.GetSoundSamples);
     }
 #else
-if (Result.DLLLastWriteTime) {
-// POSIX-WAY from https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
-char buf[BUFSIZ];
-size_t size;
+    if (Result.DLLLastWriteTime)
+    {
+        // POSIX-WAY from https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
+        char buf[BUFSIZ];
+        size_t size;
 
-int source = open(SourceDLLName, O_RDONLY, 0);
-int dest = open(TempDLLName, O_WRONLY|O_CREAT, 0644);
+        int source = open(SourceDLLName, O_RDONLY, 0);
+        int dest = open(TempDLLName, O_WRONLY | O_CREAT, 0644);
 
-while ((size = read(source, buf, BUFSIZ)) > 0) {
-    write(dest, buf, size);
-}
-close(source);
-close(dest);
+        while ((size = read(source, buf, BUFSIZ)) > 0)
+        {
+            write(dest, buf, size);
+        }
+        close(source);
+        close(dest);
 
-Result.GameCodeDLL = dlopen(TempDLLName, RTLD_LAZY);
-if (Result.GameCodeDLL) {
-    Result.UpdateAndRender = (game_update_and_render*)dlsym(Result.GameCodeDLL, "GameUpdateAndRender");
-    Result.GetSoundSamples = (game_get_sound_samples*)dlsym(Result.GameCodeDLL, "GameGetSoundSamples");
-    Result.IsValid = (Result.UpdateAndRender &&
-    Result.GetSoundSamples);
-}
-else {
-    puts(dlerror());
-}
-}
+        Result.GameCodeDLL = dlopen(TempDLLName, RTLD_LAZY);
+        if (Result.GameCodeDLL)
+        {
+            Result.UpdateAndRender = (game_update_and_render *)dlsym(Result.GameCodeDLL, "GameUpdateAndRender");
+            Result.GetSoundSamples = (game_get_sound_samples *)dlsym(Result.GameCodeDLL, "GameGetSoundSamples");
+            Result.IsValid = (Result.UpdateAndRender &&
+                              Result.GetSoundSamples);
+        }
+        else
+        {
+            puts(dlerror());
+        }
+    }
 #endif
 
     if (!Result.IsValid)
