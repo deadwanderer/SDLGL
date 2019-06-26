@@ -39,8 +39,7 @@ typedef double real64;
 #if HANDMADE_SLOW
 
 #define Assert(Expression) \
-    if (!(Expression))     \
-    {                      \
+    if (!(Expression)) {   \
         *(int *)0 = 0;     \
     }
 #else
@@ -56,29 +55,27 @@ typedef double real64;
 // TODO(anthony): Swap, min, max ... macros?
 
 inline uint32
-SafeTruncateUInt64(uint64 Value)
-{
+SafeTruncateUInt64(uint64 Value) {
     // TODO(anthony): Defines for maximum values
     Assert(Value <= 0xFFFFFFFF;)
         uint32 Result = (uint32)Value;
     return (Result);
 }
 
-struct thread_context
-{
+struct thread_context {
     int Placeholder;
 };
 
 /*
     NOTE(anthony): Services that the platform layer provides to the game.
  */
+#define HANDMADE_INTERNAL 1
 #if HANDMADE_INTERNAL
 /* IMPORTANT(anthony):
     These are NOT for doing anything in the shipping game --
     They are blocking, and the write doesn't protect against lost data!
  */
-struct debug_read_file_result
-{
+struct debug_read_file_result {
     uint32 ContentsSize;
     void *Contents;
 };
@@ -102,8 +99,7 @@ typedef DEBUG_PLATFORM_WRITE_ENTIRE_FILE(debug_platform_write_entire_file);
 // FOUR THINGS - timing, controller/keyboard input, bitmap buffer to use, sound buffer to use
 
 // TODO(anthony): In the future, rendering _specifically_ will become a three-tiered abstraction
-struct game_offscreen_buffer
-{
+struct game_offscreen_buffer {
     // NOTE(anthony): Pixels are always 32 bits wide, memory order BB GG RR XX
     void *Memory;
     int Width;
@@ -112,21 +108,18 @@ struct game_offscreen_buffer
     int BytesPerPixel;
 };
 
-struct game_sound_output_buffer
-{
+struct game_sound_output_buffer {
     int SamplesPerSecond;
     int SampleCount;
     int16 *Samples;
 };
 
-struct game_button_state
-{
+struct game_button_state {
     int HalfTransitionCount;
     bool32 EndedDown;
 };
 
-struct game_controller_input
-{
+struct game_controller_input {
     bool32 IsConnected;
     bool32 IsAnalog;
     real32 StickAverageX;
@@ -159,8 +152,7 @@ struct game_controller_input
     };
 };
 
-struct game_input
-{
+struct game_input {
     game_button_state MouseButtons[5];
     int32 MouseX, MouseY, MouseZ;
 
@@ -168,16 +160,14 @@ struct game_input
     game_controller_input Controllers[5];
 };
 
-inline game_controller_input *GetController(game_input *Input, int unsigned ControllerIndex)
-{
+inline game_controller_input *GetController(game_input *Input, int unsigned ControllerIndex) {
     Assert(ControllerIndex < ArrayCount(Input->Controllers));
 
     game_controller_input *Result = &Input->Controllers[ControllerIndex];
     return (Result);
 }
 
-struct game_memory
-{
+struct game_memory {
     bool32 IsInitialized;
 
     uint64 PermanentStorageSize;
@@ -197,8 +187,7 @@ typedef GAME_UPDATE_AND_RENDER(game_update_and_render);
 #define GAME_GET_SOUND_SAMPLES(name) void name(thread_context *Thread, game_memory *Memory, game_sound_output_buffer *SoundBuffer)
 typedef GAME_GET_SOUND_SAMPLES(game_get_sound_samples);
 
-struct game_state
-{
+struct game_state {
     int ToneHz;
     int GreenOffset;
     int BlueOffset;

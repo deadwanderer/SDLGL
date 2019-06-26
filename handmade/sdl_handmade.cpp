@@ -1,19 +1,20 @@
 #include "handmade.h"
 
-#include <stdio.h>
 #include "../include/SDL.h"
+#include <stdio.h>
 
 #ifdef _WIN32
-#include <windows.h>
 #include <malloc.h>
+#include <windows.h>
 #else
-#include <unistd.h>
+#include <dlfcn.h>
 #include <fcntl.h>
 #include <glob.h>
-#include <dlfcn.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <string.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <x86intrin.h>
 
 #ifndef MAP_ANONYMOUS
@@ -37,29 +38,25 @@ global_variable SDL_Haptic *RumbleHandles[MAX_CONTROLLERS];
 internal void
 CatStrings(size_t SourceACount, char *SourceA,
            size_t SourceBCount, char *SourceB,
-           size_t DestCount, char *Dest)
-{
+           size_t DestCount, char *Dest) {
     // TODO(anthony): Dest bounds checking
 
     for (int Index = 0;
          Index < SourceACount;
-         ++Index)
-    {
+         ++Index) {
         *Dest++ = *SourceA++;
     }
 
     for (int Index = 0;
          Index < SourceBCount;
-         ++Index)
-    {
+         ++Index) {
         *Dest++ = *SourceB++;
     }
     *Dest++ = '\0';
 }
 
 internal void
-SDLGetEXEFileName(sdl_state *State)
-{
+SDLGetEXEFileName(sdl_state *State) {
 // NOTE(casey): Never use MAX_PATH in code that is user_facing, because it
 // can be dangerous and lead to bad results.
 #ifdef _WIN32
@@ -67,10 +64,8 @@ SDLGetEXEFileName(sdl_state *State)
     State->OnePastLastEXEFileNameSlash = State->EXEFileName;
     for (char *Scan = State->EXEFileName;
          *Scan;
-         ++Scan)
-    {
-        if (*Scan == '\\')
-        {
+         ++Scan) {
+        if (*Scan == '\\') {
             State->OnePastLastEXEFileNameSlash = Scan + 1;
         }
     }
@@ -81,10 +76,8 @@ SDLGetEXEFileName(sdl_state *State)
     State->OnePastLastEXEFileNameSlash = State->EXEFileName;
     for (char *Scan = State->EXEFileName;
          *Scan;
-         Scan++)
-    {
-        if (*Scan == '/')
-        {
+         Scan++) {
+        if (*Scan == '/') {
             State->OnePastLastEXEFileNameSlash = Scan + 1;
         }
     }
@@ -92,11 +85,9 @@ SDLGetEXEFileName(sdl_state *State)
 }
 
 internal int
-StringLength(char *String)
-{
+StringLength(char *String) {
     int Count = 0;
-    while (*String++)
-    {
+    while (*String++) {
         ++Count;
     }
     return (Count);
@@ -104,17 +95,14 @@ StringLength(char *String)
 
 internal void
 SDLBuildEXEPathFileName(sdl_state *State, char *FileName,
-                        int DestCount, char *Dest)
-{
+                        int DestCount, char *Dest) {
     CatStrings(State->OnePastLastEXEFileNameSlash - State->EXEFileName, State->EXEFileName,
                StringLength(FileName), FileName,
                DestCount, Dest);
 }
 
-DEBUG_PLATFORM_FREE_FILE_MEMORY(DEBUGPlatformFreeFileMemory)
-{
-    if (Memory)
-    {
+DEBUG_PLATFORM_FREE_FILE_MEMORY(DEBUGPlatformFreeFileMemory) {
+    if (Memory) {
 #ifdef _WIN32
         VirtualFree(Memory, 0, MEM_RELEASE);
 #else
@@ -123,69 +111,53 @@ DEBUG_PLATFORM_FREE_FILE_MEMORY(DEBUGPlatformFreeFileMemory)
     }
 }
 
-DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile)
-{
+DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile) {
     debug_read_file_result Result = {};
 
 #ifdef _WIN32
     HANDLE FileHandle = CreateFileA(Filename, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-    if (FileHandle != INVALID_HANDLE_VALUE)
-    {
+    if (FileHandle != INVALID_HANDLE_VALUE) {
         LARGE_INTEGER FileSize;
-        if (GetFileSizeEx(FileHandle, &FileSize))
-        {
+        if (GetFileSizeEx(FileHandle, &FileSize)) {
             uint32 FileSize32 = SafeTruncateUInt64(FileSize.QuadPart);
             Result.Contents = VirtualAlloc(0, FileSize32, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-            if (Result.Contents)
-            {
+            if (Result.Contents) {
                 DWORD BytesRead;
                 if (ReadFile(FileHandle, Result.Contents, FileSize32, &BytesRead, 0) &&
-                    (FileSize32 == BytesRead))
-                {
+                    (FileSize32 == BytesRead)) {
                     // File read successfully
                     Result.ContentsSize = FileSize32;
-                }
-                else
-                {
+                } else {
                     // TODO(anthony): Logging
                     DEBUGPlatformFreeFileMemory(Thread, Result.Contents);
                     Result.Contents = 0;
                 }
-            }
-            else
-            {
+            } else {
                 // TODO(anthony): Logging
             }
-        }
-        else
-        {
+        } else {
             // TODO(anthony): Logging
         }
 
         CloseHandle(FileHandle);
-    }
-    else
-    {
+    } else {
         // TODO(anthony): Logging
     }
 #else
     int FileHandle = open(Filename, O_RDONLY);
-    if (FileHandle == -1)
-    {
+    if (FileHandle == -1) {
         return (Result);
     }
 
     struct stat FileStatus;
-    if (fstat(FileHandle, &FileStatus) == -1)
-    {
+    if (fstat(FileHandle, &FileStatus) == -1) {
         close(FileHandle);
         return (Result);
     }
     Result.ContentsSize = SafeTruncateUInt64(FileStatus.st_size);
 
     Result.Contents = malloc(Result.ContentsSize);
-    if (!Result.Contents)
-    {
+    if (!Result.Contents) {
         close(FileHandle);
         Result.ContentsSize = 0;
         return (Result);
@@ -193,11 +165,9 @@ DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile)
 
     uint32 BytesToRead = Result.ContentsSize;
     uint8 *NextByteLocation = (uint8 *)Result.Contents;
-    while (BytesToRead)
-    {
+    while (BytesToRead) {
         ssize_t BytesRead = read(FileHandle, NextByteLocation, BytesToRead);
-        if (BytesRead == -1)
-        {
+        if (BytesRead == -1) {
             free(Result.Contents);
             Result.Contents = 0;
             Result.ContentsSize = 0;
@@ -213,46 +183,36 @@ DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile)
     return (Result);
 }
 
-DEBUG_PLATFORM_WRITE_ENTIRE_FILE(DEBUGPlatformWriteEntireFile)
-{
+DEBUG_PLATFORM_WRITE_ENTIRE_FILE(DEBUGPlatformWriteEntireFile) {
 #ifdef _WIN32
     bool32 Result = false;
 
     HANDLE FileHandle = CreateFileA(Filename, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
-    if (FileHandle != INVALID_HANDLE_VALUE)
-    {
+    if (FileHandle != INVALID_HANDLE_VALUE) {
         DWORD BytesWritten;
-        if (WriteFile(FileHandle, Memory, MemorySize, &BytesWritten, 0))
-        {
+        if (WriteFile(FileHandle, Memory, MemorySize, &BytesWritten, 0)) {
             // File read successfully
             Result = (BytesWritten == MemorySize);
-        }
-        else
-        {
+        } else {
             // TODO(anthony): Logging
         }
         CloseHandle(FileHandle);
-    }
-    else
-    {
+    } else {
         // TODO(anthony): Logging
     }
     return (Result);
 #else
     int FileHandle = open(Filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-    if (!FileHandle)
-    {
+    if (!FileHandle) {
         return (false);
     }
 
     uint32 BytesToWrite = MemorySize;
     uint8 *NextByteLocation = (uint8 *)Memory;
-    while (BytesToWrite)
-    {
+    while (BytesToWrite) {
         ssize_t BytesWritten = write(FileHandle, NextByteLocation, BytesToWrite);
-        if (BytesWritten == -1)
-        {
+        if (BytesWritten == -1) {
             close(FileHandle);
             return (false);
         }
@@ -267,26 +227,22 @@ DEBUG_PLATFORM_WRITE_ENTIRE_FILE(DEBUGPlatformWriteEntireFile)
 
 #ifdef _WIN32
 inline FILETIME
-SDLGetLastWriteTime(char *Filename)
-{
+SDLGetLastWriteTime(char *Filename) {
     FILETIME LastWriteTime = {};
 
     WIN32_FILE_ATTRIBUTE_DATA Data;
-    if (GetFileAttributesEx((LPCWSTR)Filename, GetFileExInfoStandard, &Data))
-    {
+    if (GetFileAttributesEx((LPCWSTR)Filename, GetFileExInfoStandard, &Data)) {
         LastWriteTime = Data.ftLastWriteTime;
     }
     return (LastWriteTime);
 }
 #else
 inline time_t
-SDLGetLastWriteTime(char *Filename)
-{
+SDLGetLastWriteTime(char *Filename) {
     time_t LastWriteTime = 0;
 
     struct stat FileStatus;
-    if (stat(Filename, &FileStatus) == 0)
-    {
+    if (stat(Filename, &FileStatus) == 0) {
         LastWriteTime = FileStatus.st_mtime;
     }
     return (LastWriteTime);
@@ -294,8 +250,7 @@ SDLGetLastWriteTime(char *Filename)
 #endif
 
 internal sdl_game_code
-SDLLoadGameCode(char *SourceDLLName, char *TempDLLName)
-{
+SDLLoadGameCode(char *SourceDLLName, char *TempDLLName) {
     sdl_game_code Result = {};
 
     Result.DLLLastWriteTime = SDLGetLastWriteTime(SourceDLLName);
@@ -305,8 +260,7 @@ SDLLoadGameCode(char *SourceDLLName, char *TempDLLName)
 
     Result.GameCodeDLL = LoadLibraryA((LPCSTR)TempDLLName);
 
-    if (Result.GameCodeDLL)
-    {
+    if (Result.GameCodeDLL) {
         Result.UpdateAndRender = (game_update_and_render *)GetProcAddress(Result.GameCodeDLL, "GameUpdateAndRender");
         Result.GetSoundSamples = (game_get_sound_samples *)GetProcAddress(Result.GameCodeDLL, "GameGetSoundSamples");
 
@@ -314,8 +268,7 @@ SDLLoadGameCode(char *SourceDLLName, char *TempDLLName)
                           Result.GetSoundSamples);
     }
 #else
-    if (Result.DLLLastWriteTime)
-    {
+    if (Result.DLLLastWriteTime) {
         // POSIX-WAY from https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
         char buf[BUFSIZ];
         size_t size;
@@ -323,33 +276,84 @@ SDLLoadGameCode(char *SourceDLLName, char *TempDLLName)
         int source = open(SourceDLLName, O_RDONLY, 0);
         int dest = open(TempDLLName, O_WRONLY | O_CREAT, 0644);
 
-        while ((size = read(source, buf, BUFSIZ)) > 0)
-        {
+        while ((size = read(source, buf, BUFSIZ)) > 0) {
             write(dest, buf, size);
         }
         close(source);
         close(dest);
 
         Result.GameCodeDLL = dlopen(TempDLLName, RTLD_LAZY);
-        if (Result.GameCodeDLL)
-        {
+        if (Result.GameCodeDLL) {
             Result.UpdateAndRender = (game_update_and_render *)dlsym(Result.GameCodeDLL, "GameUpdateAndRender");
             Result.GetSoundSamples = (game_get_sound_samples *)dlsym(Result.GameCodeDLL, "GameGetSoundSamples");
             Result.IsValid = (Result.UpdateAndRender &&
                               Result.GetSoundSamples);
-        }
-        else
-        {
+        } else {
             puts(dlerror());
         }
     }
 #endif
 
-    if (!Result.IsValid)
-    {
+    if (!Result.IsValid) {
         Result.UpdateAndRender = 0;
         Result.GetSoundSamples = 0;
     }
 
     return (Result);
+}
+
+internal void
+SDLUnloadGameCode(sdl_game_code *GameCode) {
+    if (GameCode->GameCodeDLL) {
+#if _WIN32
+        FreeLibrary(GameCode->GameCodeDLL);
+#else
+        dlclose(GameCode->GameCodeDLL);
+#endif
+
+        GameCode->GameCodeDLL = 0;
+    }
+
+    GameCode->IsValid = false;
+    GameCode->UpdateAndRender = 0;
+    GameCode->GetSoundSamples = 0;
+}
+
+internal void
+SDLOpenGameControllers() {
+    int MaxJoysticks = SDL_NumJoysticks();
+    int ControllerIndex = 0;
+
+    for (int JoystickIndex = 0;
+         JoystickIndex < MaxJoysticks;
+         ++JoystickIndex) {
+        if (!SDL_IsGameController(JoystickIndex)) {
+            continue;
+        }
+        if (ControllerIndex >= MAX_CONTROLLERS) {
+            break;
+        }
+        ControllerHandles[ControllerIndex] = SDL_GameControllerOpen(JoystickIndex);
+        SDL_Joystick *JoystickHandle = SDL_GameControllerGetJoystick(ControllerHandles[ControllerIndex]);
+        RumbleHandles[ControllerIndex] = SDL_HapticOpenFromJoystick(JoystickHandle);
+        if (SDL_HapticRumbleInit(RumbleHandles[ControllerIndex]) != 0) {
+            SDL_HapticClose(RumbleHandles[ControllerIndex]);
+            RumbleHandles[ControllerIndex] = 0;
+        }
+        ControllerIndex++;
+    }
+}
+
+internal void
+SDLCloseGameControllers() {
+    for (int ControllerIndex = 0;
+         ControllerIndex < MAX_CONTROLLERS;
+         ++ControllerIndex) {
+        if (ControllerHandles[ControllerIndex]) {
+            if (RumbleHandles[ControllerIndex]) {
+                SDL_HapticClose(RumbleHandles[ControllerIndex]);
+            }
+            SDL_GameControllerClose(ControllerHandles[ControllerIndex]);
+        }
+    }
 }
