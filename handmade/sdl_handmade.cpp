@@ -307,8 +307,8 @@ SDLLoadGameCode(char *SourceDLLName, char *TempDLLName)
 
     if (Result.GameCodeDLL)
     {
-        Result.UpdateAndRender = (game_update_and_render *)GetProcAddress((HMODULE)Result.GameCodeDLL, "GameUpdateAndRender");
-        Result.GetSoundSamples = (game_get_sound_samples *)GetProcAddress((HMODULE)Result.GameCodeDLL, "GameGetSoundSamples");
+        Result.UpdateAndRender = (game_update_and_render *)GetProcAddress(Result.GameCodeDLL, "GameUpdateAndRender");
+        Result.GetSoundSamples = (game_get_sound_samples *)GetProcAddress(Result.GameCodeDLL, "GameGetSoundSamples");
 
         Result.IsValid = (Result.UpdateAndRender &&
                           Result.GetSoundSamples);

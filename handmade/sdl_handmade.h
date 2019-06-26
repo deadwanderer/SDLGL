@@ -36,10 +36,12 @@ struct sdl_debug_time_marker
 
 struct sdl_game_code
 {
-    void *GameCodeDLL;
+    
 #ifdef _WIN32
+HMODULE GameCodeDLL;
     FILETIME DLLLastWriteTime;
 #else
+void *GameCodeDLL;
     time_t DLLLastWriteTime;
 #endif
 
