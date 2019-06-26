@@ -37,7 +37,11 @@ struct sdl_debug_time_marker
 struct sdl_game_code
 {
     void *GameCodeDLL;
+#ifdef _WIN32
+    FILETIME DLLLastWriteTime;
+#else
     time_t DLLLastWriteTime;
+#endif
 
     game_update_and_render *UpdateAndRender;
     game_get_sound_samples *GetSoundSamples;
