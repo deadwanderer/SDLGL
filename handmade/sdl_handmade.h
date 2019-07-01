@@ -36,12 +36,12 @@ struct sdl_debug_time_marker
 
 struct sdl_game_code
 {
-    
+
 #ifdef _WIN32
-HMODULE GameCodeDLL;
+    HMODULE GameCodeDLL;
     FILETIME DLLLastWriteTime;
 #else
-void *GameCodeDLL;
+    void *GameCodeDLL;
     time_t DLLLastWriteTime;
 #endif
 
@@ -66,10 +66,14 @@ struct sdl_state
     void *GameMemoryBlock;
     sdl_replay_buffer ReplayBuffers[4];
 
+#ifdef _WIN32
+    HANDLE RecordingHandle;
+    HANDLE PlaybackHandle;
+#else
     int RecordingHandle;
-    int InputRecordingIndex;
-
     int PlaybackHandle;
+#endif
+    int InputRecordingIndex;
     int InputPlayingIndex;
 
     char EXEFileName[SDL_STATE_FILE_NAME_COUNT];
