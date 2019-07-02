@@ -1,0 +1,25 @@
+{
+    "workbench.colorTheme": "Material Dark Theme",
+    "workbench.iconTheme": "material-icon-theme",
+    "editor.wordWrapColumn": 100,
+    "editor.rulers": [100],
+    "workbench.startupEditor": "newUntitledFile",
+    "window.titleBarStyle": "custom",
+    "editor.detectIndentation": false,
+    "editor.minimap.maxColumn": 100,
+    "editor.fontFamily": "'Noto Mono','Source Code Pro for Powerline'",
+    "prettier.tabWidth": 4,
+    "prettier.bracketSpacing": false,
+    "prettier.eslintIntegration": true,
+    "prettier.printWidth": 100,
+    "editor.minimap.enabled": false,
+    "editor.formatOnSave": true,
+    "[html]": {
+        "editor.formatOnSave": false
+    },
+    "python.pythonPath": "/usr/bin/python3",
+    "C_Cpp.updateChannel": "Insiders",
+    "terminal.integrated.fontFamily": "monospace",
+    "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: LLVM, IndentWidth: 4, ColumnLimit: 0 }",
+    "git.confirmSync": false
+}
