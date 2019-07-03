@@ -1,8 +1,7 @@
 #ifndef _SDL_HANDMADE_H
 #define _SDL_HANDMADE_H
 
-struct sdl_offscreen_buffer
-{
+struct sdl_offscreen_buffer {
     // NOTE(anthony): Pixels are always 32 bits wide, Memory Order BB GG RR XX
     SDL_Texture *Texture;
     void *Memory;
@@ -12,14 +11,12 @@ struct sdl_offscreen_buffer
     int BytesPerPixel;
 };
 
-struct sdl_window_dimension
-{
+struct sdl_window_dimension {
     int Width;
     int Height;
 };
 
-struct sdl_sound_output
-{
+struct sdl_sound_output {
     int SamplesPerSecond;
     uint32 RunningSampleIndex;
     int BytesPerSample;
@@ -27,15 +24,13 @@ struct sdl_sound_output
     uint32 SafetyBytes;
 };
 
-struct sdl_debug_time_marker
-{
+struct sdl_debug_time_marker {
     uint32 QueuedAudioBytes;
     uint32 OutputByteCount;
     uint32 ExpectedBytesUntilFlip;
 };
 
-struct sdl_game_code
-{
+struct sdl_game_code {
 
 #ifdef _WIN32
     HMODULE GameCodeDLL;
@@ -52,16 +47,18 @@ struct sdl_game_code
 };
 
 #define SDL_STATE_FILE_NAME_COUNT 4096
-struct sdl_replay_buffer
-{
+struct sdl_replay_buffer {
+#ifdef _WIN32
+    HANDLE FileHandle;
+#else
     int FileHandle;
+#endif
     void *MemoryMap;
     char FileName[SDL_STATE_FILE_NAME_COUNT];
     void *MemoryBlock;
 };
 
-struct sdl_state
-{
+struct sdl_state {
     uint64 TotalSize;
     void *GameMemoryBlock;
     sdl_replay_buffer ReplayBuffers[4];

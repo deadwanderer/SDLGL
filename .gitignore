@@ -6,4 +6,5 @@ build/.vs
 Breakout/*
 build/imgui.ini
 hex/hex
+hhbuild/*
 .vscode

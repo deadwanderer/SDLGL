@@ -12,8 +12,8 @@
         0 - No slow code allowed!
         1 - Slow code welcome.
  */
-#define HANDMADE_INTERNAL 1
-#define HANDMADE_SLOW 1
+//#define HANDMADE_INTERNAL 1
+//#define HANDMADE_SLOW 1
 
 #include <math.h>
 #include <stdint.h>
@@ -197,11 +197,11 @@ struct game_memory {
     uint64 TransientStorageSize;
     void *TransientStorage; // NOTE(anthony): Required to be cleared to zero at startup.
 
+#if HANDMADE_INTERNAL
     debug_platform_free_file_memory *DEBUGPlatformFreeFileMemory;
     debug_platform_read_entire_file *DEBUGPlatformReadEntireFile;
     debug_platform_write_entire_file *DEBUGPlatformWriteEntireFile;
 
-#if HANDMADE_INTERNAL
     debug_cycle_counter Counters[DebugCycleCounter_Count];
 #endif
 };
