@@ -1061,6 +1061,7 @@ int main(int argc, char *argv[]) {
                 uint64 LastCycleCount = _RDTSC;
 
                 while (GlobalRunning) {
+                    NewInput->dtForFrame = TargetSecondsPerFrame;
 
 #ifdef _WIN32
                     FILETIME NewDLLWriteTime = SDLGetLastWriteTime(SourceGameCodeDLLFullPath);
