@@ -6,5 +6,13 @@ build/.vs
 Breakout/*
 build/imgui.ini
 hex/hex
-hhbuild/*
+hhbuild/*.pdb
+hhbuild/*.exe
+hhbuild/*.hmi
+hhbuild/*.map
+hhbuild/*.out
+hhbuild/*.lib
+hhbuild/*.obj
+hhbuild/*.exp
+hhbuild/handmade*.dll
 .vscode
