@@ -47,13 +47,13 @@ CatStrings(size_t SourceACount, char *SourceA,
            size_t SourceBCount, char *SourceB,
            size_t DestCount, char *Dest) {
     // TODO(anthony): Dest bounds checking
-
+    
     for (uint64 Index = 0;
          Index < SourceACount;
          ++Index) {
         *Dest++ = *SourceA++;
     }
-
+    
     for (uint32 Index = 0;
          Index < SourceBCount;
          ++Index) {
@@ -64,8 +64,8 @@ CatStrings(size_t SourceACount, char *SourceA,
 
 internal void
 SDLGetEXEFileName(sdl_state *State) {
-// NOTE(casey): Never use MAX_PATH in code that is user_facing, because it
-// can be dangerous and lead to bad results.
+    // NOTE(casey): Never use MAX_PATH in code that is user_facing, because it
+    // can be dangerous and lead to bad results.
 #ifdef _WIN32
     DWORD SizeOfFilename = GetModuleFileNameA(0, State->EXEFileName, sizeof(State->EXEFileName));
     State->OnePastLastEXEFileNameSlash = State->EXEFileName;
@@ -78,7 +78,7 @@ SDLGetEXEFileName(sdl_state *State) {
     }
 #else
     memset(State->EXEFileName, 0, sizeof(State->EXEFileName));
-
+    
     ssize_t SizeOfFilename = readlink("/proc/self/exe", State->EXEFileName, sizeof(State->EXEFileName) - 1);
     State->OnePastLastEXEFileNameSlash = State->EXEFileName;
     for (char *Scan = State->EXEFileName;
@@ -121,7 +121,7 @@ DEBUG_PLATFORM_FREE_FILE_MEMORY(DEBUGPlatformFreeFileMemory) {
 
 DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile) {
     debug_read_file_result Result = {};
-
+    
 #ifdef _WIN32
     HANDLE FileHandle = CreateFileA(Filename, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
     if (FileHandle != INVALID_HANDLE_VALUE) {
@@ -146,7 +146,7 @@ DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile) {
         } else {
             // TODO(anthony): Logging
         }
-
+        
         CloseHandle(FileHandle);
     } else {
         // TODO(anthony): Logging
@@ -156,21 +156,21 @@ DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile) {
     if (FileHandle == -1) {
         return (Result);
     }
-
+    
     struct stat FileStatus;
     if (fstat(FileHandle, &FileStatus) == -1) {
         close(FileHandle);
         return (Result);
     }
     Result.ContentsSize = SafeTruncateUInt64(FileStatus.st_size);
-
+    
     Result.Contents = malloc(Result.ContentsSize);
     if (!Result.Contents) {
         close(FileHandle);
         Result.ContentsSize = 0;
         return (Result);
     }
-
+    
     uint32 BytesToRead = Result.ContentsSize;
     uint8 *NextByteLocation = (uint8 *)Result.Contents;
     while (BytesToRead) {
@@ -187,14 +187,14 @@ DEBUG_PLATFORM_READ_ENTIRE_FILE(DEBUGPlatformReadEntireFile) {
     }
     close(FileHandle);
 #endif
-
+    
     return (Result);
 }
 
 DEBUG_PLATFORM_WRITE_ENTIRE_FILE(DEBUGPlatformWriteEntireFile) {
 #ifdef _WIN32
     bool32 Result = false;
-
+    
     HANDLE FileHandle = CreateFileA(Filename, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
     if (FileHandle != INVALID_HANDLE_VALUE) {
         DWORD BytesWritten;
@@ -211,11 +211,11 @@ DEBUG_PLATFORM_WRITE_ENTIRE_FILE(DEBUGPlatformWriteEntireFile) {
     return (Result);
 #else
     int FileHandle = open(Filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
+    
     if (!FileHandle) {
         return (false);
     }
-
+    
     uint32 BytesToWrite = MemorySize;
     uint8 *NextByteLocation = (uint8 *)Memory;
     while (BytesToWrite) {
@@ -228,7 +228,7 @@ DEBUG_PLATFORM_WRITE_ENTIRE_FILE(DEBUGPlatformWriteEntireFile) {
         NextByteLocation += BytesWritten;
     }
     close(FileHandle);
-
+    
     return (true);
 #endif _WIN32
 }
@@ -239,7 +239,7 @@ DEBUG_PLATFORM_WRITE_ENTIRE_FILE(DEBUGPlatformWriteEntireFile) {
 inline FILETIME
 SDLGetLastWriteTime(char *Filename) {
     FILETIME LastWriteTime = {};
-
+    
     WIN32_FILE_ATTRIBUTE_DATA Data;
     if (GetFileAttributesEx((LPCSTR)Filename, GetFileExInfoStandard, &Data)) {
         LastWriteTime = Data.ftLastWriteTime;
@@ -250,7 +250,7 @@ SDLGetLastWriteTime(char *Filename) {
 inline time_t
 SDLGetLastWriteTime(char *Filename) {
     time_t LastWriteTime = 0;
-
+    
     struct stat FileStatus;
     if (stat(Filename, &FileStatus) == 0) {
         LastWriteTime = FileStatus.st_mtime;
@@ -262,18 +262,18 @@ SDLGetLastWriteTime(char *Filename) {
 internal sdl_game_code
 SDLLoadGameCode(char *SourceDLLName, char *TempDLLName) {
     sdl_game_code Result = {};
-
+    
     Result.DLLLastWriteTime = SDLGetLastWriteTime(SourceDLLName);
-
+    
 #ifdef _WIN32
     CopyFile((LPCSTR)SourceDLLName, (LPCSTR)TempDLLName, FALSE);
-
+    
     Result.GameCodeDLL = LoadLibraryA((LPCSTR)TempDLLName);
-
+    
     if (Result.GameCodeDLL) {
         Result.UpdateAndRender = (game_update_and_render *)GetProcAddress(Result.GameCodeDLL, "GameUpdateAndRender");
         Result.GetSoundSamples = (game_get_sound_samples *)GetProcAddress(Result.GameCodeDLL, "GameGetSoundSamples");
-
+        
         Result.IsValid = (Result.UpdateAndRender &&
                           Result.GetSoundSamples);
     }
@@ -282,16 +282,16 @@ SDLLoadGameCode(char *SourceDLLName, char *TempDLLName) {
         // POSIX-WAY from https://stackoverflow.com/questions/10195343/copy-a-file-in-a-sane-safe-and-efficient-way
         char buf[BUFSIZ];
         size_t size;
-
+        
         int source = open(SourceDLLName, O_RDONLY, 0);
         int dest = open(TempDLLName, O_WRONLY | O_CREAT, 0644);
-
+        
         while ((size = read(source, buf, BUFSIZ)) > 0) {
             write(dest, buf, size);
         }
         close(source);
         close(dest);
-
+        
         Result.GameCodeDLL = dlopen(TempDLLName, RTLD_LAZY);
         if (Result.GameCodeDLL) {
             Result.UpdateAndRender = (game_update_and_render *)dlsym(Result.GameCodeDLL, "GameUpdateAndRender");
@@ -303,12 +303,12 @@ SDLLoadGameCode(char *SourceDLLName, char *TempDLLName) {
         }
     }
 #endif
-
+    
     if (!Result.IsValid) {
         Result.UpdateAndRender = 0;
         Result.GetSoundSamples = 0;
     }
-
+    
     return (Result);
 }
 
@@ -320,10 +320,10 @@ SDLUnloadGameCode(sdl_game_code *GameCode) {
 #else
         dlclose(GameCode->GameCodeDLL);
 #endif
-
+        
         GameCode->GameCodeDLL = 0;
     }
-
+    
     GameCode->IsValid = false;
     GameCode->UpdateAndRender = 0;
     GameCode->GetSoundSamples = 0;
@@ -333,7 +333,7 @@ internal void
 SDLOpenGameControllers() {
     int MaxJoysticks = SDL_NumJoysticks();
     int ControllerIndex = 0;
-
+    
     for (int JoystickIndex = 0;
          JoystickIndex < MaxJoysticks;
          ++JoystickIndex) {
@@ -371,17 +371,17 @@ SDLCloseGameControllers() {
 internal void
 SDLInitAudio(int32 SamplesPerSecond, int32 BufferSize) {
     SDL_AudioSpec AudioSettings = {};
-
+    
     AudioSettings.freq = SamplesPerSecond;
     AudioSettings.format = AUDIO_S16LSB;
     AudioSettings.channels = 2;
     AudioSettings.samples = 512;
-
+    
     SDL_OpenAudio(&AudioSettings, 0);
-
+    
     printf("Initialized an audio device at frequency %d Hz, %d channels, buffer size %d\n",
            AudioSettings.freq, AudioSettings.channels, AudioSettings.size);
-
+    
     if (AudioSettings.format != AUDIO_S16LSB) {
         printf("Oops, we didn't get AUDIO_S16LSB as our sample format!");
         SDL_CloseAudio();
@@ -392,7 +392,7 @@ sdl_window_dimension
 SDLGetWindowDimension(SDL_Window *Window) {
     sdl_window_dimension Result;
     SDL_GetWindowSize(Window, &Result.Width, &Result.Height);
-
+    
     return (Result);
 }
 
@@ -405,23 +405,23 @@ SDLResizeTexture(sdl_offscreen_buffer *Buffer, SDL_Renderer *Renderer, int Width
         munmap(Buffer->Memory, (Buffer->Width * Buffer->Height) * Buffer->BytesPerPixel);
 #endif
     }
-
+    
     Buffer->Width = Width;
     Buffer->Height = Height;
-
+    
     int BytesPerPixel = 4;
     Buffer->BytesPerPixel = BytesPerPixel;
-
+    
     if (Buffer->Texture) {
         SDL_DestroyTexture(Buffer->Texture);
     }
-
+    
     Buffer->Texture = SDL_CreateTexture(Renderer,
                                         SDL_PIXELFORMAT_ARGB8888,
                                         SDL_TEXTUREACCESS_STREAMING,
                                         Buffer->Width,
                                         Buffer->Height);
-
+    
     Buffer->Pitch = Align16(Width * BytesPerPixel);
     int BitmapMemorySize = (Buffer->Width * Buffer->Height) * BytesPerPixel;
 #ifdef _WIN32
@@ -441,7 +441,7 @@ SDLDisplayBufferInWindow(sdl_offscreen_buffer *Buffer, SDL_Renderer *Renderer, i
                       0,
                       Buffer->Memory,
                       Buffer->Pitch);
-
+    
     if ((WindowWidth >= Buffer->Width * 2) &&
         (WindowHeight >= Buffer->Height * 2)) {
         SDL_Rect SrcRect = {0, 0, Buffer->Width, Buffer->Height};
@@ -451,10 +451,10 @@ SDLDisplayBufferInWindow(sdl_offscreen_buffer *Buffer, SDL_Renderer *Renderer, i
                        &SrcRect,
                        &DestRect);
     } else {
-#if 0
+#if 1
         int OffsetX = 10;
         int OffsetY = 10;
-
+        
         SDL_SetRenderDrawColor(Renderer, 0, 0, 0, 255);
         SDL_Rect BlackRects[4] = {
             {0, 0, WindowWidth, OffsetY},
@@ -466,7 +466,7 @@ SDLDisplayBufferInWindow(sdl_offscreen_buffer *Buffer, SDL_Renderer *Renderer, i
         int OffsetX = 0;
         int OffsetY = 0;
 #endif
-
+        
         SDL_Rect SrcRect = {0, 0, Buffer->Width, Buffer->Height};
         SDL_Rect DestRect = {OffsetX, OffsetY, Buffer->Width, Buffer->Height};
         SDL_RenderCopy(Renderer,
@@ -506,13 +506,13 @@ SDLProcessGameControllerButton(game_button_state *OldState, bool Value,
 internal real32
 SDLProcessGameControllerAxisValue(int16 Value, int16 DeadZoneThreshold) {
     real32 Result = 0;
-
+    
     if (Value < -DeadZoneThreshold) {
         Result = (real32)((Value + DeadZoneThreshold) / (32768.0f - DeadZoneThreshold));
     } else if (Value > DeadZoneThreshold) {
         Result = (real32)((Value - DeadZoneThreshold) / (32767.0f - DeadZoneThreshold));
     }
-
+    
     return (Result);
 }
 
@@ -537,26 +537,26 @@ SDLBeginRecordingInput(sdl_state *State, int InputRecordingIndex) {
     sdl_replay_buffer *ReplayBuffer = SDLGetReplayBuffer(State, InputRecordingIndex);
     if (ReplayBuffer->MemoryBlock) {
         State->InputRecordingIndex = InputRecordingIndex;
-
+        
         char FileName[SDL_STATE_FILE_NAME_COUNT];
         SDLGetInputFileLocation(State, true, InputRecordingIndex, sizeof(FileName), FileName);
 #ifdef _WIN32
         State->RecordingHandle = CreateFileA(FileName, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
-
+        
 #if 0
         LARGE_INTEGER FilePosition;
         FilePosition.QuadPart = State->TotalSize;
         SetFilePointerEx(State->RecordingHandle, FilePosition, 0, FILE_BEGIN);
 #endif
-
+        
         CopyMemory(ReplayBuffer->MemoryBlock, State->GameMemoryBlock, (size_t)State->TotalSize);
 #else
         State->RecordingHandle = open(FileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
+        
 #if 0
         lseek(State->RecordingHandle, State->TotalSize, SEEK_SET);
 #endif
-
+        
         memcpy(ReplayBuffer->MemoryBlock, State->GameMemoryBlock, State->TotalSize);
 #endif
     }
@@ -577,26 +577,26 @@ SDLBeginInputPlayBack(sdl_state *State, int InputPlayingIndex) {
     sdl_replay_buffer *ReplayBuffer = SDLGetReplayBuffer(State, InputPlayingIndex);
     if (ReplayBuffer->MemoryBlock) {
         State->InputPlayingIndex = InputPlayingIndex;
-
+        
         char FileName[SDL_STATE_FILE_NAME_COUNT];
         SDLGetInputFileLocation(State, true, InputPlayingIndex, sizeof(FileName), FileName);
 #ifdef _WIN32
         State->PlaybackHandle = CreateFileA(FileName, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
-
+        
 #if 0
-LARGE_INTEGER FilePosition;
-FilePosition.QuadPart = State->TotalSize;
-SetFilePointerEx(State->PlaybackHandle, FilePosition, 0, FILE_BEGIN);
+        LARGE_INTEGER FilePosition;
+        FilePosition.QuadPart = State->TotalSize;
+        SetFilePointerEx(State->PlaybackHandle, FilePosition, 0, FILE_BEGIN);
 #endif
-
+        
         CopyMemory(State->GameMemoryBlock, ReplayBuffer->MemoryBlock, (size_t)State->TotalSize);
 #else
         State->PlaybackHandle = open(FileName, O_RDONLY);
-
+        
 #if 0
-lseek(State->PlaybackHandle, State->TotalSize, SEEK_SET);
+        lseek(State->PlaybackHandle, State->TotalSize, SEEK_SET);
 #endif
-
+        
         memcpy(State->GameMemoryBlock, ReplayBuffer->MemoryBlock, State->TotalSize);
 #endif
     }
@@ -630,7 +630,7 @@ SDLPlayBackInput(sdl_state *State, game_input *NewInput) {
 #else
     ssize_t BytesRead = read(State->PlaybackHandle, NewInput, sizeof(*NewInput));
 #endif
-
+    
     if (BytesRead == 0) {
         // NOTE(anthony): We've hit the end of the stream, go back to the beginning
         int PlayingIndex = State->InputPlayingIndex;
@@ -659,96 +659,96 @@ SDLProcessPendingEvents(sdl_state *State, game_controller_input *KeyboardControl
     SDL_Event Event;
     while (SDL_PollEvent(&Event)) {
         switch (Event.type) {
-        case SDL_QUIT: {
-            GlobalRunning = false;
-        } break;
-
-        case SDL_KEYDOWN:
-        case SDL_KEYUP: {
-            SDL_Keycode KeyCode = Event.key.keysym.sym;
-            bool IsDown = (Event.key.state == SDL_PRESSED);
-
-            // NOTE(anthony): SDL has 'repeat", which we'll use to detect repeated keys
-            if (Event.key.repeat == 0) {
-                if (KeyCode == SDLK_w) {
-                    SDLProcessKeyboardEvent(&KeyboardController->MoveUp, IsDown);
-                } else if (KeyCode == SDLK_a) {
-                    SDLProcessKeyboardEvent(&KeyboardController->MoveLeft, IsDown);
-                } else if (KeyCode == SDLK_s) {
-                    SDLProcessKeyboardEvent(&KeyboardController->MoveDown, IsDown);
-                } else if (KeyCode == SDLK_d) {
-                    SDLProcessKeyboardEvent(&KeyboardController->MoveRight, IsDown);
-                } else if (KeyCode == SDLK_q) {
-                    SDLProcessKeyboardEvent(&KeyboardController->LeftShoulder, IsDown);
-                } else if (KeyCode == SDLK_e) {
-                    SDLProcessKeyboardEvent(&KeyboardController->RightShoulder, IsDown);
-                } else if (KeyCode == SDLK_UP) {
-                    SDLProcessKeyboardEvent(&KeyboardController->ActionUp, IsDown);
-                } else if (KeyCode == SDLK_LEFT) {
-                    SDLProcessKeyboardEvent(&KeyboardController->ActionLeft, IsDown);
-                } else if (KeyCode == SDLK_DOWN) {
-                    SDLProcessKeyboardEvent(&KeyboardController->ActionDown, IsDown);
-                } else if (KeyCode == SDLK_RIGHT) {
-                    SDLProcessKeyboardEvent(&KeyboardController->ActionRight, IsDown);
-                } else if (KeyCode == SDLK_ESCAPE) {
-                    SDLProcessKeyboardEvent(&KeyboardController->Back, IsDown);
-                } else if (KeyCode == SDLK_SPACE) {
-                    SDLProcessKeyboardEvent(&KeyboardController->Start, IsDown);
-                }
+            case SDL_QUIT: {
+                GlobalRunning = false;
+            } break;
+            
+            case SDL_KEYDOWN:
+            case SDL_KEYUP: {
+                SDL_Keycode KeyCode = Event.key.keysym.sym;
+                bool IsDown = (Event.key.state == SDL_PRESSED);
+                
+                // NOTE(anthony): SDL has 'repeat", which we'll use to detect repeated keys
+                if (Event.key.repeat == 0) {
+                    if (KeyCode == SDLK_w) {
+                        SDLProcessKeyboardEvent(&KeyboardController->MoveUp, IsDown);
+                    } else if (KeyCode == SDLK_a) {
+                        SDLProcessKeyboardEvent(&KeyboardController->MoveLeft, IsDown);
+                    } else if (KeyCode == SDLK_s) {
+                        SDLProcessKeyboardEvent(&KeyboardController->MoveDown, IsDown);
+                    } else if (KeyCode == SDLK_d) {
+                        SDLProcessKeyboardEvent(&KeyboardController->MoveRight, IsDown);
+                    } else if (KeyCode == SDLK_q) {
+                        SDLProcessKeyboardEvent(&KeyboardController->LeftShoulder, IsDown);
+                    } else if (KeyCode == SDLK_e) {
+                        SDLProcessKeyboardEvent(&KeyboardController->RightShoulder, IsDown);
+                    } else if (KeyCode == SDLK_UP) {
+                        SDLProcessKeyboardEvent(&KeyboardController->ActionUp, IsDown);
+                    } else if (KeyCode == SDLK_LEFT) {
+                        SDLProcessKeyboardEvent(&KeyboardController->ActionLeft, IsDown);
+                    } else if (KeyCode == SDLK_DOWN) {
+                        SDLProcessKeyboardEvent(&KeyboardController->ActionDown, IsDown);
+                    } else if (KeyCode == SDLK_RIGHT) {
+                        SDLProcessKeyboardEvent(&KeyboardController->ActionRight, IsDown);
+                    } else if (KeyCode == SDLK_ESCAPE) {
+                        SDLProcessKeyboardEvent(&KeyboardController->Back, IsDown);
+                    } else if (KeyCode == SDLK_SPACE) {
+                        SDLProcessKeyboardEvent(&KeyboardController->Start, IsDown);
+                    }
 #if HANDMADE_INTERNAL
-                else if (KeyCode == SDLK_p) {
-                    if (IsDown) {
-                        GlobalPause = !GlobalPause;
-                    }
-                } else if (KeyCode == SDLK_l) {
-                    if (IsDown) {
-                        if (State->InputPlayingIndex == 0) {
-                            if (State->InputRecordingIndex == 0) {
-                                SDLBeginRecordingInput(State, 1);
+                    else if (KeyCode == SDLK_p) {
+                        if (IsDown) {
+                            GlobalPause = !GlobalPause;
+                        }
+                    } else if (KeyCode == SDLK_l) {
+                        if (IsDown) {
+                            if (State->InputPlayingIndex == 0) {
+                                if (State->InputRecordingIndex == 0) {
+                                    SDLBeginRecordingInput(State, 1);
+                                } else {
+                                    SDLEndRecordingInput(State);
+                                    SDLBeginInputPlayBack(State, 1);
+                                }
                             } else {
-                                SDLEndRecordingInput(State);
-                                SDLBeginInputPlayBack(State, 1);
+                                SDLEndInputPlayBack(State);
                             }
-                        } else {
-                            SDLEndInputPlayBack(State);
                         }
                     }
-                }
 #endif // HANDMADE_INTERNAL
-
-                if (IsDown) {
-                    bool AltKeyWasDown = (Event.key.keysym.mod & KMOD_ALT);
-                    if (KeyCode == SDLK_F4 && AltKeyWasDown) {
-                        GlobalRunning = false;
-                    }
-                    if (KeyCode == SDLK_RETURN && AltKeyWasDown) {
-                        SDL_Window *Window = SDL_GetWindowFromID(Event.window.windowID);
-                        if (Window) {
-                            SDLToggleFullscreen(Window);
+                    
+                    if (IsDown) {
+                        bool AltKeyWasDown = (Event.key.keysym.mod & KMOD_ALT);
+                        if (KeyCode == SDLK_F4 && AltKeyWasDown) {
+                            GlobalRunning = false;
+                        }
+                        if (KeyCode == SDLK_RETURN && AltKeyWasDown) {
+                            SDL_Window *Window = SDL_GetWindowFromID(Event.window.windowID);
+                            if (Window) {
+                                SDLToggleFullscreen(Window);
+                            }
                         }
                     }
                 }
-            }
-        } break;
-        case SDL_WINDOWEVENT: {
-            switch (Event.window.event) {
-            case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                SDL_Window *Window = SDL_GetWindowFromID(Event.window.windowID);
-                SDL_Renderer *Renderer = SDL_GetRenderer(Window);
-                printf("SDL_WINDOWEVENT_SIZE_CHANGED (%d, %d)\n", Event.window.data1, Event.window.data2);
             } break;
-            case SDL_WINDOWEVENT_FOCUS_GAINED: {
-                printf("SDL_WINDOWEVENT_FOCUS_GAINED\n");
+            case SDL_WINDOWEVENT: {
+                switch (Event.window.event) {
+                    case SDL_WINDOWEVENT_SIZE_CHANGED: {
+                        SDL_Window *Window = SDL_GetWindowFromID(Event.window.windowID);
+                        SDL_Renderer *Renderer = SDL_GetRenderer(Window);
+                        printf("SDL_WINDOWEVENT_SIZE_CHANGED (%d, %d)\n", Event.window.data1, Event.window.data2);
+                    } break;
+                    case SDL_WINDOWEVENT_FOCUS_GAINED: {
+                        printf("SDL_WINDOWEVENT_FOCUS_GAINED\n");
+                    } break;
+                    case SDL_WINDOWEVENT_EXPOSED: {
+                        SDL_Window *Window = SDL_GetWindowFromID(Event.window.windowID);
+                        SDL_Renderer *Renderer = SDL_GetRenderer(Window);
+                        sdl_window_dimension Dimension = SDLGetWindowDimension(Window);
+                        SDLDisplayBufferInWindow(&GlobalBackbuffer, Renderer,
+                                                 Dimension.Width, Dimension.Height);
+                    } break;
+                }
             } break;
-            case SDL_WINDOWEVENT_EXPOSED: {
-                SDL_Window *Window = SDL_GetWindowFromID(Event.window.windowID);
-                SDL_Renderer *Renderer = SDL_GetRenderer(Window);
-                sdl_window_dimension Dimension = SDLGetWindowDimension(Window);
-                SDLDisplayBufferInWindow(&GlobalBackbuffer, Renderer,
-                                         Dimension.Width, Dimension.Height);
-            } break;
-            }
-        } break;
         }
     }
 }
@@ -774,7 +774,7 @@ HandleDebugCycleCounters(game_memory *Memory) {
          CounterIndex < ArrayCount(Memory->Counters);
          ++CounterIndex) {
         debug_cycle_counter *Counter = Memory->Counters + CounterIndex;
-
+        
         if (Counter->HitCount) {
             printf("  %d: %llucy %uh %llucy/h\n",
                    CounterIndex,
@@ -798,7 +798,7 @@ SDLDebugDrawVertical(sdl_offscreen_buffer *Backbuffer,
     if (Bottom > Backbuffer->Height) {
         Bottom = Backbuffer->Height;
     }
-
+    
     if ((X >= 0) && (X < Backbuffer->Width)) {
         uint8 *Pixel = ((uint8 *)Backbuffer->Memory +
                         X * Backbuffer->BytesPerPixel +
@@ -830,25 +830,25 @@ SDLDebugSyncDisplay(sdl_offscreen_buffer *Backbuffer,
     int PadX = 16;
     int PadY = 16;
     int LineHeight = 64;
-
+    
     real32 C = (real32)(Backbuffer->Width - 2 * PadX) / (real32)SoundOutput->SecondaryBufferSize;
     for (int MarkerIndex = 0;
          MarkerIndex < MarkerCount;
          ++MarkerIndex) {
         sdl_debug_time_marker *ThisMarker = &Markers[MarkerIndex];
-
+        
         uint32 WriteColor = 0x000000FF;
         uint32 QueuedAudioColor = 0x00FF0000;
         uint32 ExpectedFlipColor = 0x0000FF00;
-
+        
         int Top = PadY;
         int Bottom = PadY + LineHeight;
         if (MarkerIndex == CurrentMarkerIndex) {
             Top += LineHeight + PadY;
             Bottom += LineHeight + PadY;
-
+            
             int FirstTop = Top;
-
+            
             SDLDrawSoundBufferMarker(Backbuffer, SoundOutput, C, MarkerIndex * 30 + PadX,
                                      Top, Bottom, ThisMarker->OutputByteCount, WriteColor);
             Top += LineHeight + PadY;
@@ -860,13 +860,13 @@ SDLDebugSyncDisplay(sdl_offscreen_buffer *Backbuffer,
             SDLDrawSoundBufferMarker(Backbuffer, SoundOutput, C, MarkerIndex * 30 + PadX,
                                      FirstTop, Bottom, ThisMarker->ExpectedBytesUntilFlip, ExpectedFlipColor);
         }
-
+        
         SDLDrawSoundBufferMarker(Backbuffer, SoundOutput, C, MarkerIndex * 30 + PadX,
                                  Top, Bottom, ThisMarker->OutputByteCount, WriteColor);
-
+        
         SDLDrawSoundBufferMarker(Backbuffer, SoundOutput, C, MarkerIndex * 30 + PadX,
                                  Top, Bottom, ThisMarker->QueuedAudioBytes, QueuedAudioColor);
-
+        
         SDLDrawSoundBufferMarker(Backbuffer, SoundOutput, C, MarkerIndex * 30 + PadX,
                                  Top, Bottom, ThisMarker->ExpectedBytesUntilFlip, ExpectedFlipColor);
     }
@@ -876,36 +876,36 @@ SDLDebugSyncDisplay(sdl_offscreen_buffer *Backbuffer,
 
 int main(int argc, char *argv[]) {
     sdl_state SDLState = {};
-
+    
     GlobalPerfCountFrequency = SDL_GetPerformanceFrequency();
-
+    
     SDLGetEXEFileName(&SDLState);
-
+    
     char SourceGameCodeDLLFullPath[SDL_STATE_FILE_NAME_COUNT];
     char TempGameCodeDLLFullPath[SDL_STATE_FILE_NAME_COUNT];
-
+    
     SDLBuildEXEPathFileName(&SDLState,
-#ifdef _WIN32
+                            #ifdef _WIN32
                             "handmade.dll",
-#else
+                            #else
                             "handmade.so",
-#endif
+                            #endif
                             sizeof(SourceGameCodeDLLFullPath), SourceGameCodeDLLFullPath);
     SDLBuildEXEPathFileName(&SDLState,
-#ifdef _WIN32
+                            #ifdef _WIN32
                             "handmade_temp.dll",
-#else
+                            #else
                             "handmade_temp.so",
-#endif
+                            #endif
                             sizeof(TempGameCodeDLLFullPath), TempGameCodeDLLFullPath);
-
+    
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_AUDIO);
     SDLOpenGameControllers();
-
+    
 #if HANDMADE_INTERNAL
     DEBUGGlobalShowCursor = true;
 #endif
-
+    
     // Create our window
     SDL_Window *Window = SDL_CreateWindow("Handmade Hero",
                                           SDL_WINDOWPOS_UNDEFINED,
@@ -913,17 +913,17 @@ int main(int argc, char *argv[]) {
                                           GlobalWindowWidth,
                                           GlobalWindowHeight,
                                           SDL_WINDOW_RESIZABLE);
-
+    
     if (Window) {
         SDL_ShowCursor(DEBUGGlobalShowCursor ? SDL_ENABLE : SDL_DISABLE);
-
+        
         SDL_Renderer *Renderer = SDL_CreateRenderer(Window, -1, SDL_RENDERER_PRESENTVSYNC);
-
+        
         if (Renderer) {
             SDLResizeTexture(&GlobalBackbuffer, Renderer, GlobalWindowWidth, GlobalWindowHeight);
-
+            
             sdl_sound_output SoundOutput = {};
-
+            
             int MonitorRefreshHz = 60;
             int DisplayIndex = SDL_GetWindowDisplayIndex(Window);
             SDL_DisplayMode Mode = {};
@@ -933,48 +933,48 @@ int main(int argc, char *argv[]) {
             }
             real32 GameUpdateHz = (real32)(MonitorRefreshHz / 2.0f);
             real32 TargetSecondsPerFrame = 1.0f / (real32)GameUpdateHz;
-
+            
             SoundOutput.SamplesPerSecond = 48000;
             SoundOutput.BytesPerSample = sizeof(int16) * 2;
             SoundOutput.SecondaryBufferSize = SoundOutput.SamplesPerSecond * SoundOutput.BytesPerSample;
-
+            
             // TODO(anthony): Actually compute this variance and see what the lowest reasonable value actually is
             SoundOutput.SafetyBytes = (int)(((real32)SoundOutput.SamplesPerSecond * (real32)SoundOutput.BytesPerSample / GameUpdateHz) / 2.0f);
             SDLInitAudio(SoundOutput.SamplesPerSecond, SoundOutput.SecondaryBufferSize);
             SDLClearSoundBuffer(&SoundOutput);
             SDL_PauseAudio(0);
-
+            
             GlobalRunning = true;
-
+            
 #if 0
             int16 TestSamples[4800] = {};
             uint64 LastCounter = 0;
-
+            
             while (GlobalRunning) {
                 uint32 QueuedAudioBytes = SDL_GetQueuedAudioSize(1);
                 if (!QueuedAudioBytes) {
                     uint64 NewCounter = SDLGetWallClock();
                     printf("%lu bytes in:%f\n", ArrayCount(TestSamples),
                            SDLGetSecondsElapsed(LastCounter, NewCounter));
-
+                    
                     SDL_QueueAudio(1, TestSamples, ArrayCount(TestSamples));
                     LastCounter = NewCounter;
                 }
             }
 #endif
-
+            
             uint32 MaxPossibleOverrun = 2 * 8 * sizeof(uint16);
-
+            
 #ifdef _WIN32
             int16 *Samples = (int16 *)VirtualAlloc(0, SoundOutput.SecondaryBufferSize + MaxPossibleOverrun,
                                                    MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-
+            
 #if HANDMADE_INTERNAL
             LPVOID BaseAddress = (LPVOID)Terabytes(2);
 #else
             LPVOID BaseAddress = 0;
 #endif // HANDMADE_INTERNAL
-
+            
 #else
             int16 *Samples = (int16 *)calloc(SoundOutput.SamplesPerSecond + MaxPossibleOverrun, SoundOutput.BytesPerSample);
 #if HANDMADE_INTERNAL
@@ -982,20 +982,20 @@ int main(int argc, char *argv[]) {
 #else
             void *BaseAddress = 0;
 #endif // HANDMADE_INTERNAL
-
+            
 #endif // _WIN32
             game_memory GameMemory = {};
             GameMemory.PermanentStorageSize = Megabytes(64);
             GameMemory.TransientStorageSize = Gigabytes(1);
-
+            
 #if HANDMADE_INTERNAL
             GameMemory.DEBUGPlatformFreeFileMemory = DEBUGPlatformFreeFileMemory;
             GameMemory.DEBUGPlatformReadEntireFile = DEBUGPlatformReadEntireFile;
             GameMemory.DEBUGPlatformWriteEntireFile = DEBUGPlatformWriteEntireFile;
 #endif // HANDMADE_INTERNAL
-
+            
             SDLState.TotalSize = GameMemory.PermanentStorageSize + GameMemory.TransientStorageSize;
-
+            
 #ifdef _WIN32
             SDLState.GameMemoryBlock = VirtualAlloc(BaseAddress, (size_t)SDLState.TotalSize,
                                                     MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
@@ -1005,19 +1005,19 @@ int main(int argc, char *argv[]) {
 #endif // _WIN32
             GameMemory.PermanentStorage = SDLState.GameMemoryBlock;
             GameMemory.TransientStorage = ((uint8 *)GameMemory.PermanentStorage + GameMemory.PermanentStorageSize);
-
+            
             for (int ReplayIndex = 1;
                  ReplayIndex < ArrayCount(SDLState.ReplayBuffers);
                  ++ReplayIndex) {
                 sdl_replay_buffer *ReplayBuffer = &SDLState.ReplayBuffers[ReplayIndex];
-
+                
                 SDLGetInputFileLocation(&SDLState, false, ReplayIndex,
                                         sizeof(ReplayBuffer->FileName), ReplayBuffer->FileName);
-
+                
 #ifdef _WIN32
                 ReplayBuffer->FileHandle = CreateFileA(ReplayBuffer->FileName,
                                                        GENERIC_READ | GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
-
+                
                 LARGE_INTEGER MaxSize;
                 MaxSize.QuadPart = SDLState.TotalSize;
                 ReplayBuffer->MemoryMap = CreateFileMapping(ReplayBuffer->FileHandle,
@@ -1028,41 +1028,41 @@ int main(int argc, char *argv[]) {
                 ReplayBuffer->FileHandle = open(ReplayBuffer->FileName,
                                                 O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
                 ftruncate(ReplayBuffer->FileHandle, SDLState.TotalSize);
-
+                
                 ReplayBuffer->MemoryBlock = mmap(0, (size_t)SDLState.TotalSize,
                                                  PROT_READ | PROT_WRITE, MAP_PRIVATE,
                                                  ReplayBuffer->FileHandle, 0);
 #endif // _WIN32
-
+                
                 if (ReplayBuffer->MemoryBlock) {
-
+                    
                 } else {
                     // TODO(anthony): Diagnostic
                 }
             }
-
+            
             if (Samples && GameMemory.PermanentStorage && GameMemory.TransientStorage) {
                 game_input Input[2] = {};
                 game_input *NewInput = &Input[0];
                 game_input *OldInput = &Input[1];
-
+                
                 uint64 LastCounter = SDLGetWallClock();
                 uint64 FlipWallClock = SDLGetWallClock();
-
+                
                 int DebugTimeMarkerIndex = 0;
                 sdl_debug_time_marker DebugTimeMarkers[30] = {0};
-
+                
                 uint32 AudioLatencyBytes = 0;
                 real32 AudioLatencySeconds = 0;
                 bool32 SoundIsValid = false;
-
+                
                 sdl_game_code Game = SDLLoadGameCode(SourceGameCodeDLLFullPath, TempGameCodeDLLFullPath);
-
+                
                 uint64 LastCycleCount = _RDTSC;
-
+                
                 while (GlobalRunning) {
                     NewInput->dtForFrame = TargetSecondsPerFrame;
-
+                    
 #ifdef _WIN32
                     FILETIME NewDLLWriteTime = SDLGetLastWriteTime(SourceGameCodeDLLFullPath);
                     if (CompareFileTime(&NewDLLWriteTime, &Game.DLLLastWriteTime) != 0) {
@@ -1076,7 +1076,7 @@ int main(int argc, char *argv[]) {
                         Game = SDLLoadGameCode(SourceGameCodeDLLFullPath, TempGameCodeDLLFullPath);
                     }
 #endif
-
+                    
                     game_controller_input *OldKeyboardController = GetController(OldInput, 0);
                     game_controller_input *NewKeyboardController = GetController(NewInput, 0);
                     *NewKeyboardController = {};
@@ -1087,9 +1087,9 @@ int main(int argc, char *argv[]) {
                         NewKeyboardController->Buttons[ButtonIndex].EndedDown =
                             OldKeyboardController->Buttons[ButtonIndex].EndedDown;
                     }
-
+                    
                     SDLProcessPendingEvents(&SDLState, NewKeyboardController);
-
+                    
                     if (!GlobalPause) {
                         uint32 MouseState = SDL_GetMouseState(&NewInput->MouseX, &NewInput->MouseY);
                         NewInput->MouseZ = 0;
@@ -1103,37 +1103,37 @@ int main(int argc, char *argv[]) {
                                                 MouseState & SDL_BUTTON(SDL_BUTTON_X1));
                         SDLProcessKeyboardEvent(&NewInput->MouseButtons[4],
                                                 MouseState & SDL_BUTTON(SDL_BUTTON_X2));
-
+                        
                         uint32 MaxControllerCount = MAX_CONTROLLERS;
                         if (MaxControllerCount > (ArrayCount(NewInput->Controllers) - 1)) {
                             MaxControllerCount = (ArrayCount(NewInput->Controllers) - 1);
                         }
-
+                        
                         for (uint32 ControllerIndex = 0;
                              ControllerIndex < MaxControllerCount;
                              ++ControllerIndex) {
                             uint32 OurControllerIndex = ControllerIndex + 1;
                             game_controller_input *OldController = GetController(OldInput, OurControllerIndex);
                             game_controller_input *NewController = GetController(NewInput, OurControllerIndex);
-
+                            
                             SDL_GameController *Controller = ControllerHandles[ControllerIndex];
                             if (Controller && SDL_GameControllerGetAttached(Controller)) {
                                 NewController->IsConnected = true;
                                 NewController->IsAnalog = OldController->IsAnalog;
-
+                                
                                 int16 AxisLX = SDL_GameControllerGetAxis(Controller, SDL_CONTROLLER_AXIS_LEFTX);
                                 int16 AxisLY = SDL_GameControllerGetAxis(Controller, SDL_CONTROLLER_AXIS_LEFTY);
-
+                                
                                 NewController->StickAverageX = SDLProcessGameControllerAxisValue(
                                     AxisLX, CONTROLLER_AXIS_LEFT_DEADZONE);
                                 NewController->StickAverageY = -SDLProcessGameControllerAxisValue(
                                     AxisLY, CONTROLLER_AXIS_LEFT_DEADZONE);
-
+                                
                                 if ((NewController->StickAverageX != 0.0f) ||
                                     (NewController->StickAverageY != 0.0f)) {
                                     NewController->IsAnalog = true;
                                 }
-
+                                
                                 if (SDL_GameControllerGetButton(Controller, SDL_CONTROLLER_BUTTON_DPAD_UP)) {
                                     NewController->StickAverageY = 1.0f;
                                     NewController->IsAnalog = false;
@@ -1150,7 +1150,7 @@ int main(int argc, char *argv[]) {
                                     NewController->StickAverageX = 1.0f;
                                     NewController->IsAnalog = false;
                                 }
-
+                                
                                 real32 Threshold = 0.5f;
                                 SDLProcessGameControllerButton(&OldController->MoveLeft,
                                                                NewController->StickAverageX < -Threshold,
@@ -1164,7 +1164,7 @@ int main(int argc, char *argv[]) {
                                 SDLProcessGameControllerButton(&OldController->MoveUp,
                                                                NewController->StickAverageY > Threshold,
                                                                &NewController->MoveUp);
-
+                                
                                 SDLProcessGameControllerButton(&OldController->ActionDown,
                                                                SDL_GameControllerGetButton(Controller, SDL_CONTROLLER_BUTTON_A),
                                                                &NewController->ActionDown);
@@ -1183,7 +1183,7 @@ int main(int argc, char *argv[]) {
                                 SDLProcessGameControllerButton(&OldController->RightShoulder,
                                                                SDL_GameControllerGetButton(Controller, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER),
                                                                &NewController->RightShoulder);
-
+                                
                                 SDLProcessGameControllerButton(&OldController->Start,
                                                                SDL_GameControllerGetButton(Controller, SDL_CONTROLLER_BUTTON_START),
                                                                &NewController->Start);
@@ -1195,51 +1195,53 @@ int main(int argc, char *argv[]) {
                                 NewController->IsConnected = false;
                             } // if(Controller...)
                         }     // for(ControllerIndex...)
-
+                        
                         thread_context Thread = {};
-
+                        
                         game_offscreen_buffer Buffer = {};
                         // NOTE(anthony): GlobalBackbuffer is top-down, whereas the game is bottom-up
                         Buffer.Memory = ((uint8 *)GlobalBackbuffer.Memory) +
-                                        (GlobalBackbuffer.Width *
-                                         (GlobalBackbuffer.Height - 1) *
-                                         GlobalBackbuffer.BytesPerPixel);
+                            (GlobalBackbuffer.Width *
+                             (GlobalBackbuffer.Height - 1) *
+                             GlobalBackbuffer.BytesPerPixel);
                         Buffer.Width = GlobalBackbuffer.Width;
                         Buffer.Height = GlobalBackbuffer.Height;
                         Buffer.Pitch = -GlobalBackbuffer.Pitch;
-
+                        
+                        /*
                         if (SDLState.InputRecordingIndex) {
                             SDLRecordInput(&SDLState, NewInput);
                         }
                         if (SDLState.InputPlayingIndex) {
                             SDLPlayBackInput(&SDLState, NewInput);
                         }
-
+                        */
+                        
                         if (Game.UpdateAndRender) {
                             Game.UpdateAndRender(&Thread, &GameMemory, NewInput, &Buffer);
                             HandleDebugCycleCounters(&GameMemory);
                         }
-
+                        
                         uint64 AudioWallClock = SDLGetWallClock();
                         real32 FromBeginToAudioSeconds = SDLGetSecondsElapsed(FlipWallClock, AudioWallClock);
-
+                        
                         uint32 QueuedAudioBytes = SDL_GetQueuedAudioSize(1);
-
+                        
                         if (!SoundIsValid) {
                             SoundIsValid = true;
                         }
-
+                        
                         uint32 ExpectedSoundBytesPerFrame =
                             (int)((real32)(SoundOutput.SamplesPerSecond * SoundOutput.BytesPerSample) /
                                   GameUpdateHz);
                         real32 SecondsLeftUntilFlip = (TargetSecondsPerFrame - FromBeginToAudioSeconds);
                         uint32 ExpectedBytesUntilFlip = (uint32)((SecondsLeftUntilFlip / TargetSecondsPerFrame) * (real32)ExpectedSoundBytesPerFrame);
-
+                        
                         int32 BytesToWrite = (ExpectedSoundBytesPerFrame + SoundOutput.SafetyBytes) - QueuedAudioBytes;
                         if (BytesToWrite < 0) {
                             BytesToWrite = 0;
                         }
-
+                        
                         game_sound_output_buffer SoundBuffer = {};
                         SoundBuffer.SamplesPerSecond = SoundOutput.SamplesPerSecond;
                         SoundBuffer.SampleCount = Align8(BytesToWrite / SoundOutput.BytesPerSample);
@@ -1248,79 +1250,79 @@ int main(int argc, char *argv[]) {
                         if (Game.GetSoundSamples) {
                             Game.GetSoundSamples(&Thread, &GameMemory, &SoundBuffer);
                         }
-
+                        
 #if HANDMADE_INTERNAL
                         sdl_debug_time_marker *Marker = &DebugTimeMarkers[DebugTimeMarkerIndex];
                         Marker->ExpectedBytesUntilFlip = ExpectedBytesUntilFlip;
                         Marker->OutputByteCount = BytesToWrite;
                         Marker->QueuedAudioBytes = QueuedAudioBytes;
-
+                        
                         AudioLatencyBytes = QueuedAudioBytes;
                         AudioLatencySeconds =
                             (((real32)AudioLatencyBytes / (real32)SoundOutput.BytesPerSample) /
                              (real32)SoundOutput.SamplesPerSecond);
-
+                        
 #if 0
                         printf("BTW:%u - Latency:%d (%fs)\n",
                                BytesToWrite, AudioLatencyBytes, AudioLatencySeconds);
 #endif
 #endif // HANDMADE_INTERNAL
-
+                        
                         SDLFillSoundBuffer(&SoundOutput, BytesToWrite, &SoundBuffer);
-
+                        
                         uint64 WorkCounter = SDLGetWallClock();
                         real32 WorkSecondsElapsed = SDLGetSecondsElapsed(LastCounter, WorkCounter);
-
+                        
                         // TODO(anthony): TEST, PROBABLY BUGGY!
                         real32 SecondsElapsedForFrame = WorkSecondsElapsed;
                         if (SecondsElapsedForFrame < TargetSecondsPerFrame) {
                             uint32 SleepMS = (uint32)(1000.0f * (TargetSecondsPerFrame - SecondsElapsedForFrame));
-
+                            
                             if (SleepMS > 0) {
                                 SDL_Delay(SleepMS);
                             }
-
+                            
                             real32 TestSecondsElapsedForFrame = SDLGetSecondsElapsed(LastCounter, SDLGetWallClock());
-
+                            
                             if (TestSecondsElapsedForFrame < TargetSecondsPerFrame) {
                                 // TODO(anthony): Log missed sleep
                             }
-
+                            
                             while (SecondsElapsedForFrame < TargetSecondsPerFrame) {
                                 SecondsElapsedForFrame = SDLGetSecondsElapsed(LastCounter, SDLGetWallClock());
                             }
                         } else {
                             // TODO(anthony): Log missed frame rate
                         } // if(SecondsElapsedForFrame...)
-
+                        
                         uint64 EndCounter = SDLGetWallClock();
                         real32 MSPerFrame = 1000.0f * SDLGetSecondsElapsed(LastCounter, EndCounter);
                         LastCounter = EndCounter;
-
+                        
 #if HANDMADE_INTERNAL
                         SDLDebugSyncDisplay(&GlobalBackbuffer, ArrayCount(DebugTimeMarkers), DebugTimeMarkers,
                                             DebugTimeMarkerIndex - 1, &SoundOutput, TargetSecondsPerFrame);
 #endif
-
+                        
                         sdl_window_dimension Dimension = SDLGetWindowDimension(Window);
                         SDLDisplayBufferInWindow(&GlobalBackbuffer, Renderer, Dimension.Width, Dimension.Height);
-
+                        
                         FlipWallClock = SDLGetWallClock();
-
+                        
                         game_input *Temp = NewInput;
                         NewInput = OldInput;
                         OldInput = Temp;
-
+                        
 #if HANDMADE_INTERNAL
                         uint64 EndCycleCount = _RDTSC;
                         uint64 CyclesElapsed = EndCycleCount - LastCycleCount;
-
+                        
                         real64 FPS = 0.0f;
                         real64 MCPF = ((real64)CyclesElapsed / (1000.0f * 1000.0f));
-
+                        
                         printf("%.02fms/f,  %.02ff/s,  %.02fmc/f\n", MSPerFrame, FPS, MCPF);
 #endif // HANDMADE_INTERNAL
-
+                        
 #if HANDMADE_INTERNAL
                         ++DebugTimeMarkerIndex;
                         if (DebugTimeMarkerIndex == ArrayCount(DebugTimeMarkers)) {
@@ -1338,7 +1340,7 @@ int main(int argc, char *argv[]) {
     } else {
         // TODO(anthony): Logging
     }
-
+    
     SDLCloseGameControllers();
     SDL_Quit();
     return (0);
